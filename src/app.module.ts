@@ -1,12 +1,14 @@
+import { AppService } from './app.service';
+import { AppController } from './app.controller';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import appConfig from './core/config/app.config';
 import appConfigProduction from './core/config/app.config.production';
 import databaseConfig from './core/config/database.config';
-import { Role, RoleSchema } from './user/schemas/role.schema';
-import { RoleService } from './user/services/role.service';
-import { RoleController } from './user/controllers/role.controller';
+import { Role, RoleSchema } from './modules/user/schemas/role.schema';
+import { RoleService } from './modules/user/services/role.service';
+import { RoleController } from './modules/user/controllers/role.controller';
 import MatriculeGenerate from './core/utils/matricule_generate';
 
 @Module({
@@ -23,7 +25,7 @@ import MatriculeGenerate from './core/utils/matricule_generate';
     }),
     MongooseModule.forFeature([{ name: Role.name, schema: RoleSchema }]),
   ],
-  controllers: [RoleController],
-  providers: [RoleService, MatriculeGenerate],
+  controllers: [AppController, RoleController],
+  providers: [AppService, RoleService, MatriculeGenerate],
 })
 export class AppModule {}

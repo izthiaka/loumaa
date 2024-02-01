@@ -12,6 +12,11 @@ import {
 import { Role } from '../schemas/role.schema';
 import { RoleService } from '../services/role.service';
 import MatriculeGenerate from 'src/core/utils/matricule_generate';
+import {
+  CreateRoleDto,
+  RoleSpecificFieldDto,
+  UpdateRoleDto,
+} from '../dtos/role.dto';
 
 @Controller('users/roles')
 export class RoleController {
@@ -23,17 +28,19 @@ export class RoleController {
   @Post('store')
   @HttpCode(HttpStatus.CREATED)
   async createRole(
-    @Body() roleData: Role,
+    @Body() createRoleDto: CreateRoleDto,
   ): Promise<{ message: string; status: number; data?: Role }> {
-    const existingRole = await this.roleService.findRoleByName(roleData.name);
+    const existingRole = await this.roleService.findRoleByName(
+      createRoleDto.name,
+    );
     if (existingRole) {
       return {
-        message: `Le role [${roleData.name}] existe déjà.`,
+        message: `Le role [${createRoleDto.name}] existe déjà.`,
         status: HttpStatus.CONFLICT,
       };
     }
     const body = {
-      ...roleData,
+      ...createRoleDto,
       code: this.matricule.generate(),
     };
 
@@ -50,26 +57,32 @@ export class RoleController {
   async findAllRoles(): Promise<{
     message: string;
     status: number;
-    data?: Role[];
+    data?: RoleSpecificFieldDto[];
   }> {
     const roles = await this.roleService.findAllRoles();
+    const rolesResponse = roles.map(
+      ({ name, code }) => new RoleSpecificFieldDto(name, code),
+    );
     return {
       message: 'Liste des roles récupérée avec succès.',
       status: HttpStatus.OK,
-      data: roles,
+      data: rolesResponse,
     };
   }
 
   @Get(':code/detail')
-  async findRoleById(
-    @Param('code') code: string,
-  ): Promise<{ message: string; status: number; data?: Role | null }> {
+  async findRoleById(@Param('code') code: string): Promise<{
+    message: string;
+    status: number;
+    data?: RoleSpecificFieldDto | null;
+  }> {
     const role = await this.roleService.findRoleByCode(code);
     if (role) {
+      const roleDetail = new RoleSpecificFieldDto(role.name, role.code);
       return {
         message: "Détail d'un role récupéré avec succès.",
         status: HttpStatus.OK,
-        data: role,
+        data: roleDetail,
       };
     }
     return {
@@ -81,11 +94,11 @@ export class RoleController {
   @Put(':code/update')
   async updateRole(
     @Param('code') code: string,
-    @Body() roleData: Role,
+    @Body() updateRoleDto: UpdateRoleDto,
   ): Promise<{ message: string; status: number; data?: Role | null }> {
     const role = await this.roleService.findRoleByCode(code);
     if (role) {
-      const data = await this.roleService.updateRole(role._id, roleData);
+      const data = await this.roleService.updateRole(role._id, updateRoleDto);
       return {
         message: "Modification d'un role récupéré avec succès.",
         status: HttpStatus.OK,
