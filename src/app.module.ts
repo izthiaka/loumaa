@@ -9,7 +9,10 @@ import databaseConfig from './core/config/database.config';
 import { Role, RoleSchema } from './modules/user/schemas/role.schema';
 import { RoleService } from './modules/user/services/role.service';
 import { RoleController } from './modules/user/controllers/role.controller';
+import { UserController } from './modules/user/controllers/user.controller';
 import MatriculeGenerate from './core/utils/matricule_generate';
+import { UserService } from './modules/user/services/user.service';
+import { User, UserSchema } from './modules/user/schemas/user.schema';
 
 @Module({
   imports: [
@@ -23,9 +26,12 @@ import MatriculeGenerate from './core/utils/matricule_generate';
       }),
       inject: [ConfigService],
     }),
-    MongooseModule.forFeature([{ name: Role.name, schema: RoleSchema }]),
+    MongooseModule.forFeature([
+      { name: Role.name, schema: RoleSchema },
+      { name: User.name, schema: UserSchema },
+    ]),
   ],
-  controllers: [AppController, RoleController],
-  providers: [AppService, RoleService, MatriculeGenerate],
+  controllers: [AppController, RoleController, UserController],
+  providers: [AppService, RoleService, UserService, MatriculeGenerate],
 })
 export class AppModule {}

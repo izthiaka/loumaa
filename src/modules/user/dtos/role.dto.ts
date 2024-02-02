@@ -1,14 +1,15 @@
 import { IsString, IsNotEmpty } from 'class-validator';
+import { Role } from '../schemas/role.schema';
 
 export class CreateRoleDto {
-  @IsString({ message: 'Le nom du rôle doit être une chaîne de caractères.' })
-  @IsNotEmpty({ message: 'Le nom du rôle est requis.' })
+  @IsString({ message: "L'input [nom] doit être une chaîne de caractères." })
+  @IsNotEmpty({ message: "L'input [nom] est requis." })
   readonly name: string;
 }
 
 export class UpdateRoleDto {
-  @IsString({ message: 'Le nom du rôle doit être une chaîne de caractères.' })
-  @IsNotEmpty({ message: 'Le nom du rôle est requis.' })
+  @IsString({ message: "L'input [nom] doit être une chaîne de caractères." })
+  @IsNotEmpty({ message: "L'input [nom] est requis." })
   readonly name?: string;
 }
 
@@ -16,8 +17,8 @@ export class RoleSpecificFieldDto {
   name: string;
   code: string;
 
-  constructor(name: string, code: string) {
-    this.name = name;
-    this.code = code;
+  constructor(role: Role) {
+    this.name = role.name;
+    this.code = role.code;
   }
 }

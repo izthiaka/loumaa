@@ -30,26 +30,33 @@ export class RoleController {
   async createRole(
     @Body() createRoleDto: CreateRoleDto,
   ): Promise<{ message: string; status: number; data?: Role }> {
-    const existingRole = await this.roleService.findRoleByName(
-      createRoleDto.name,
-    );
-    if (existingRole) {
+    try {
+      const existingRole = await this.roleService.findRoleByName(
+        createRoleDto.name,
+      );
+      if (existingRole) {
+        return {
+          message: `Le role [${createRoleDto.name}] existe déjà.`,
+          status: HttpStatus.CONFLICT,
+        };
+      }
+      const body = {
+        ...createRoleDto,
+        code: this.matricule.generate(),
+      };
+
+      const createdRole: Role = await this.roleService.createRole(body as Role);
       return {
-        message: `Le role [${createRoleDto.name}] existe déjà.`,
-        status: HttpStatus.CONFLICT,
+        message: 'Role créé avec succès.',
+        status: HttpStatus.CREATED,
+        data: createdRole,
+      };
+    } catch (error) {
+      return {
+        message: "Erreur lors de la création d'un role.",
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
       };
     }
-    const body = {
-      ...createRoleDto,
-      code: this.matricule.generate(),
-    };
-
-    const createdRole: Role = await this.roleService.createRole(body as Role);
-    return {
-      message: 'Role créé avec succès.',
-      status: HttpStatus.CREATED,
-      data: createdRole,
-    };
   }
 
   @Get()
@@ -59,15 +66,22 @@ export class RoleController {
     status: number;
     data?: RoleSpecificFieldDto[];
   }> {
-    const roles = await this.roleService.findAllRoles();
-    const rolesResponse = roles.map(
-      ({ name, code }) => new RoleSpecificFieldDto(name, code),
-    );
-    return {
-      message: 'Liste des roles récupérée avec succès.',
-      status: HttpStatus.OK,
-      data: rolesResponse,
-    };
+    try {
+      const roles = await this.roleService.findAllRoles();
+      const rolesResponse = roles.map(
+        (value) => new RoleSpecificFieldDto(value),
+      );
+      return {
+        message: 'Liste des roles récupérée avec succès.',
+        status: HttpStatus.OK,
+        data: rolesResponse,
+      };
+    } catch (error) {
+      return {
+        message: 'Erreur lors de la recupération des roles.',
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+      };
+    }
   }
 
   @Get(':code/detail')
@@ -76,19 +90,57 @@ export class RoleController {
     status: number;
     data?: RoleSpecificFieldDto | null;
   }> {
-    const role = await this.roleService.findRoleByCode(code);
-    if (role) {
-      const roleDetail = new RoleSpecificFieldDto(role.name, role.code);
+    try {
+      const role = await this.roleService.findRoleByCode(code);
+      if (role) {
+        const roleDetail = new RoleSpecificFieldDto(role);
+        return {
+          message: "Détail d'un role récupéré avec succès.",
+          status: HttpStatus.OK,
+          data: roleDetail,
+        };
+      }
       return {
-        message: "Détail d'un role récupéré avec succès.",
-        status: HttpStatus.OK,
-        data: roleDetail,
+        message: 'Role introuvable',
+        status: HttpStatus.NOT_FOUND,
+      };
+    } catch (error) {
+      return {
+        message: 'Erreur lors de la recupération du role.',
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
       };
     }
-    return {
-      message: 'Role introuvable',
-      status: HttpStatus.NOT_FOUND,
-    };
+  }
+
+  @Get('search')
+  async searchRole(@Param('search') search: string): Promise<{
+    message: string;
+    status: number;
+    data?: RoleSpecificFieldDto[];
+  }> {
+    try {
+      const roles = await this.roleService.searchRole(search);
+      if (roles) {
+        const roleSearchResponse = roles.map(
+          (value) => new RoleSpecificFieldDto(value),
+        );
+        return {
+          message: 'Recherche role récupéré avec succès.',
+          status: HttpStatus.OK,
+          data: roleSearchResponse,
+        };
+      }
+      return {
+        message: 'Pas de role trouvé.',
+        status: HttpStatus.OK,
+        data: [],
+      };
+    } catch (error) {
+      return {
+        message: 'Erreur lors de la recupération du role.',
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+      };
+    }
   }
 
   @Put(':code/update')
@@ -96,36 +148,50 @@ export class RoleController {
     @Param('code') code: string,
     @Body() updateRoleDto: UpdateRoleDto,
   ): Promise<{ message: string; status: number; data?: Role | null }> {
-    const role = await this.roleService.findRoleByCode(code);
-    if (role) {
-      const data = await this.roleService.updateRole(role._id, updateRoleDto);
+    try {
+      const role = await this.roleService.findRoleByCode(code);
+      if (role) {
+        const data = await this.roleService.updateRole(role._id, updateRoleDto);
+        return {
+          message: "Modification d'un role récupéré avec succès.",
+          status: HttpStatus.OK,
+          data: data,
+        };
+      }
       return {
-        message: "Modification d'un role récupéré avec succès.",
-        status: HttpStatus.OK,
-        data: data,
+        message: 'Role introuvable',
+        status: HttpStatus.NOT_FOUND,
+      };
+    } catch (error) {
+      return {
+        message: 'Erreur lors de la mise à jour du role.',
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
       };
     }
-    return {
-      message: 'Role introuvable',
-      status: HttpStatus.NOT_FOUND,
-    };
   }
 
   @Delete(':code/delete')
   async deleteRole(
     @Param('code') code: string,
   ): Promise<{ message: string; status: number; data?: Role | null }> {
-    const role = await this.roleService.findRoleByCode(code);
-    if (role) {
-      await this.roleService.deleteRole(role._id);
+    try {
+      const role = await this.roleService.findRoleByCode(code);
+      if (role) {
+        await this.roleService.deleteRole(role._id);
+        return {
+          message: 'Role supprimé avec succès.',
+          status: HttpStatus.OK,
+        };
+      }
       return {
-        message: 'Role supprimer avec succès.',
-        status: HttpStatus.OK,
+        message: 'Role introuvable',
+        status: HttpStatus.NOT_FOUND,
+      };
+    } catch (error) {
+      return {
+        message: 'Erreur lors de la supression du role.',
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
       };
     }
-    return {
-      message: 'Role introuvable',
-      status: HttpStatus.NOT_FOUND,
-    };
   }
 }
