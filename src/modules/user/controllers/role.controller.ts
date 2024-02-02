@@ -8,6 +8,7 @@ import {
   Delete,
   HttpStatus,
   HttpCode,
+  Query,
 } from '@nestjs/common';
 import { Role } from '../schemas/role.schema';
 import { RoleService } from '../services/role.service';
@@ -113,14 +114,14 @@ export class RoleController {
   }
 
   @Get('search')
-  async searchRole(@Param('search') search: string): Promise<{
+  async searchRole(@Query('search') search: string): Promise<{
     message: string;
     status: number;
     data?: RoleSpecificFieldDto[];
   }> {
     try {
       const roles = await this.roleService.searchRole(search);
-      if (roles) {
+      if (roles.length > 0) {
         const roleSearchResponse = roles.map(
           (value) => new RoleSpecificFieldDto(value),
         );
