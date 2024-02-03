@@ -1,10 +1,10 @@
+import { Model } from 'mongoose';
 import {
   Injectable,
   ConflictException,
   NotFoundException,
 } from '@nestjs/common';
 import { User } from '../schemas/user.schema';
-import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import MatriculeGenerate from 'src/core/utils/matricule_generate';
 import {
@@ -14,8 +14,6 @@ import {
   UpdateUserDto,
 } from '../dtos/user.dto';
 import UserStatusAccount from 'src/core/constant/user_status_account';
-import { Request } from 'express';
-import UrlFileUtil from 'src/core/utils/url_file';
 
 @Injectable()
 export class UserService {
@@ -224,14 +222,16 @@ export class UserService {
         );
       }
 
-      if (updateUserDto.email && updateUserDto.email !== existingUser.email) {
-        const userWithSameEmail = await this.userModel
-          .findOne({ email: updateUserDto.email })
-          .exec();
-        if (userWithSameEmail) {
-          throw new ConflictException(
-            `L'e-mail [${updateUserDto.email}] est déjà utilisé par un autre utilisateur.`,
-          );
+      if (updateUserDto.email) {
+        if (updateUserDto.email && updateUserDto.email !== existingUser.email) {
+          const userWithSameEmail = await this.userModel
+            .findOne({ email: updateUserDto.email })
+            .exec();
+          if (userWithSameEmail) {
+            throw new ConflictException(
+              `L'e-mail [${updateUserDto.email}] est déjà utilisé par un autre utilisateur.`,
+            );
+          }
         }
       }
 
@@ -280,7 +280,6 @@ export class UserService {
   }
 
   async updatePictureUser(
-    req: Request,
     id: string,
     uploadPictureDto: PictureUploadDto,
   ): Promise<User | null> {
@@ -296,9 +295,6 @@ export class UserService {
       const updatedUser = await this.userModel
         .findByIdAndUpdate(id, uploadPictureDto, { new: true })
         .exec();
-      if (existingUser.photo) {
-        UrlFileUtil.deleteFileAsset(req, existingUser.photo);
-      }
 
       return updatedUser;
     } catch (error) {

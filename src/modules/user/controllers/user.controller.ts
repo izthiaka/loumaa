@@ -10,7 +10,8 @@ import {
   HttpCode,
   ConflictException,
   UseInterceptors,
-  Req,
+  Query,
+  UploadedFile,
 } from '@nestjs/common';
 import { User } from '../schemas/user.schema';
 import { UserService } from '../services/user.service';
@@ -24,7 +25,6 @@ import {
 import { RoleService } from '../services/role.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from 'src/core/config/multer.config';
-import UrlFileUtil from 'src/core/utils/url_file';
 import { Request } from 'express';
 
 const staticUrlImage = 'images';
@@ -93,8 +93,14 @@ export class UserController {
         data: usersResponse,
       };
     } catch (error) {
+      const errorMessage =
+        error instanceof ConflictException
+          ? (error.getResponse() as { message: string }).message
+          : error.message.replace(/^ConflictException: /, '') ||
+            'Erreur lors de la récupération des utilisateur.';
+
       return {
-        message: 'Erreur lors de la récupération des utilisateurs.',
+        message: errorMessage,
         status: HttpStatus.INTERNAL_SERVER_ERROR,
       };
     }
@@ -121,15 +127,21 @@ export class UserController {
         status: HttpStatus.NOT_FOUND,
       };
     } catch (error) {
+      const errorMessage =
+        error instanceof ConflictException
+          ? (error.getResponse() as { message: string }).message
+          : error.message.replace(/^ConflictException: /, '') ||
+            "Erreur lors de la récupération d'un utilisateur.";
+
       return {
-        message: "Erreur lors de la récupération de l'utilisateur.",
+        message: errorMessage,
         status: HttpStatus.INTERNAL_SERVER_ERROR,
       };
     }
   }
 
   @Get('search')
-  async searchUser(@Param('search') search: string): Promise<{
+  async searchUser(@Query('search') search: string): Promise<{
     message: string;
     status: number;
     data?: UserSpecificFieldDto[];
@@ -152,8 +164,14 @@ export class UserController {
         data: [],
       };
     } catch (error) {
+      const errorMessage =
+        error instanceof ConflictException
+          ? (error.getResponse() as { message: string }).message
+          : error.message.replace(/^ConflictException: /, '') ||
+            "Erreur lors de la recherche d'un utilisateur.";
+
       return {
-        message: "Erreur lors de la recherche de l'utilisateur.",
+        message: errorMessage,
         status: HttpStatus.INTERNAL_SERVER_ERROR,
       };
     }
@@ -191,8 +209,14 @@ export class UserController {
         status: HttpStatus.NOT_FOUND,
       };
     } catch (error) {
+      const errorMessage =
+        error instanceof ConflictException
+          ? (error.getResponse() as { message: string }).message
+          : error.message.replace(/^ConflictException: /, '') ||
+            "Erreur lors de l'ajout d'un utilisateur.";
+
       return {
-        message: "Erreur lors de la mise à jour de l'utilisateur.",
+        message: errorMessage,
         status: HttpStatus.INTERNAL_SERVER_ERROR,
       };
     }
@@ -221,8 +245,14 @@ export class UserController {
         status: HttpStatus.NOT_FOUND,
       };
     } catch (error) {
+      const errorMessage =
+        error instanceof ConflictException
+          ? (error.getResponse() as { message: string }).message
+          : error.message.replace(/^ConflictException: /, '') ||
+            "Erreur lors de l'ajout d'un utilisateur.";
+
       return {
-        message: "Erreur lors de la mise à jour de l'utilisateur.",
+        message: errorMessage,
         status: HttpStatus.INTERNAL_SERVER_ERROR,
       };
     }
@@ -231,22 +261,23 @@ export class UserController {
   @Put(':matricule/picture')
   @UseInterceptors(FileInterceptor('photo', multerConfig(staticUrlImage)))
   async uploadProfileStatus(
-    @Req() req: Request,
+    @UploadedFile() file: Request,
     @Param('matricule') matricule: string,
     @Body() pictureUploadDto: PictureUploadDto,
   ): Promise<{ message: string; status: number; data?: User | null }> {
     try {
       const user = await this.userService.findUserByMatricule(matricule);
       if (user) {
-        const urlImage = UrlFileUtil.getUrlFileIsExist(req, staticUrlImage);
-        if (urlImage) {
-          const urlHost = UrlFileUtil.setUrlWithHosting(req, urlImage);
+        const baseUrl =
+          process.env.BASE_URL || `http://localhost:${process.env.PORT}`;
+        const imageUrl = file ? file.path : null;
+        const urlHost = `${baseUrl}/${imageUrl}`;
+        if (imageUrl) {
           const body = {
             ...pictureUploadDto,
             photo: urlHost,
           };
           const updatedUser = await this.userService.updatePictureUser(
-            req,
             user._id,
             body,
           );
@@ -266,8 +297,14 @@ export class UserController {
         status: HttpStatus.NOT_FOUND,
       };
     } catch (error) {
+      const errorMessage =
+        error instanceof ConflictException
+          ? (error.getResponse() as { message: string }).message
+          : error.message.replace(/^ConflictException: /, '') ||
+            "Erreur lors de l'ajout d'un utilisateur.";
+
       return {
-        message: "Erreur lors de la mise à jour de l'utilisateur.",
+        message: errorMessage,
         status: HttpStatus.INTERNAL_SERVER_ERROR,
       };
     }
@@ -291,8 +328,14 @@ export class UserController {
         status: HttpStatus.NOT_FOUND,
       };
     } catch (error) {
+      const errorMessage =
+        error instanceof ConflictException
+          ? (error.getResponse() as { message: string }).message
+          : error.message.replace(/^ConflictException: /, '') ||
+            "Erreur lors de l'ajout d'un utilisateur.";
+
       return {
-        message: "Erreur lors de la supression de l'utilisateur.",
+        message: errorMessage,
         status: HttpStatus.INTERNAL_SERVER_ERROR,
       };
     }
