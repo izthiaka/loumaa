@@ -296,6 +296,10 @@ export class UserService {
         .findByIdAndUpdate(id, uploadPictureDto, { new: true })
         .exec();
 
+      if (existingUser.photo) {
+        // Delete full path image in server folder
+      }
+
       return updatedUser;
     } catch (error) {
       throw Error(error);

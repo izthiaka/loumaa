@@ -1,21 +1,20 @@
-import { AppService } from './app.service';
-import { AppController } from './app.controller';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import appConfig from './core/config/app.config';
 import appConfigProduction from './core/config/app.config.production';
 import databaseConfig from './core/config/database.config';
-import { Role, RoleSchema } from './modules/user/schemas/role.schema';
-import { RoleService } from './modules/user/services/role.service';
-import { RoleController } from './modules/user/controllers/role.controller';
-import { UserController } from './modules/user/controllers/user.controller';
-import MatriculeGenerate from './core/utils/matricule_generate';
-import { UserService } from './modules/user/services/user.service';
-import { User, UserSchema } from './modules/user/schemas/user.schema';
+import { UserModule } from './features/user/modules/user.module';
+import { RoleModule } from './features/user/modules/role.module';
 
 @Module({
   imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..'),
+    }),
     ConfigModule.forRoot({
       load: [appConfig, appConfigProduction, databaseConfig],
     }),
@@ -26,12 +25,8 @@ import { User, UserSchema } from './modules/user/schemas/user.schema';
       }),
       inject: [ConfigService],
     }),
-    MongooseModule.forFeature([
-      { name: Role.name, schema: RoleSchema },
-      { name: User.name, schema: UserSchema },
-    ]),
+    RoleModule,
+    UserModule,
   ],
-  controllers: [AppController, RoleController, UserController],
-  providers: [AppService, RoleService, UserService, MatriculeGenerate],
 })
 export class AppModule {}

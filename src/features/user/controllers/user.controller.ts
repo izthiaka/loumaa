@@ -268,8 +268,7 @@ export class UserController {
     try {
       const user = await this.userService.findUserByMatricule(matricule);
       if (user) {
-        const baseUrl =
-          process.env.BASE_URL || `http://localhost:${process.env.PORT}`;
+        const baseUrl = process.env.BASE_URL;
         const imageUrl = file ? file.path : null;
         const urlHost = `${baseUrl}/${imageUrl}`;
         if (imageUrl) {
