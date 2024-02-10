@@ -4,7 +4,7 @@ import {
   ConflictException,
   NotFoundException,
 } from '@nestjs/common';
-import { User } from '../schemas/user.schema';
+import { User } from '../entities/user.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import MatriculeGenerate from 'src/core/utils/matricule_generate';
 import {
@@ -14,12 +14,14 @@ import {
   UpdateUserDto,
 } from '../dtos/user.dto';
 import UserStatusAccount from 'src/core/constant/user_status_account';
+import BcryptImplement from 'src/core/config/bcrypt';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<User>,
     private readonly matriculeGenerate: MatriculeGenerate,
+    private readonly bcrypt: BcryptImplement,
   ) {}
 
   async createUser(createUserDto: CreateUserDto): Promise<User> {
@@ -48,11 +50,14 @@ export class UserService {
         }
       }
 
+      const passwordHash = this.bcrypt.hash('Password@123');
+
       const user = new this.userModel(createUserDto);
       user.matricule = this.matriculeGenerate.generate();
       user.status = createUserDto.status
         ? createUserDto.status
         : UserStatusAccount.getPendingStatusLibelle();
+      user.password = passwordHash;
 
       return await user.save();
     } catch (error) {
@@ -185,6 +190,37 @@ export class UserService {
           {
             $match: {
               phone,
+            },
+          },
+          {
+            $lookup: {
+              from: 'roles',
+              localField: 'role',
+              foreignField: '_id',
+              as: 'role',
+            },
+          },
+          {
+            $unwind: {
+              path: '$role',
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+        ])
+        .exec();
+      return user[0];
+    } catch (error) {
+      throw Error(error);
+    }
+  }
+
+  async findByUsernameOrEmailOrPhone(identifier: string): Promise<User | null> {
+    try {
+      const user = await this.userModel
+        .aggregate([
+          {
+            $match: {
+              $or: [{ email: identifier }, { phone: identifier }],
             },
           },
           {

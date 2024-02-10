@@ -39,6 +39,9 @@ export class User extends Document {
 
   @Prop({ required: true, type: MongooseSchema.Types.ObjectId, ref: 'Role' })
   role: Role;
+
+  @Prop({ required: true })
+  password: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

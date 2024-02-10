@@ -9,6 +9,7 @@ import appConfigProduction from './core/config/app.config.production';
 import databaseConfig from './core/config/database.config';
 import { UserModule } from './features/user/modules/user.module';
 import { RoleModule } from './features/user/modules/role.module';
+import { AuthModule } from './features/auth/auth.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { RoleModule } from './features/user/modules/role.module';
     }),
     RoleModule,
     UserModule,
+    AuthModule,
   ],
 })
 export class AppModule {}

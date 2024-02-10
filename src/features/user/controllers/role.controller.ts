@@ -9,8 +9,9 @@ import {
   HttpStatus,
   HttpCode,
   Query,
+  ConflictException,
 } from '@nestjs/common';
-import { Role } from '../schemas/role.schema';
+import { Role } from '../entities/role.schema';
 import { RoleService } from '../services/role.service';
 import MatriculeGenerate from 'src/core/utils/matricule_generate';
 import {
@@ -78,8 +79,14 @@ export class RoleController {
         data: rolesResponse,
       };
     } catch (error) {
+      const errorMessage =
+        error instanceof ConflictException
+          ? (error.getResponse() as { message: string }).message
+          : error.message.replace(/^ConflictException: /, '') ||
+            'Erreur lors de la recupération des roles.';
+
       return {
-        message: 'Erreur lors de la recupération des roles.',
+        message: errorMessage,
         status: HttpStatus.INTERNAL_SERVER_ERROR,
       };
     }
@@ -106,8 +113,14 @@ export class RoleController {
         status: HttpStatus.NOT_FOUND,
       };
     } catch (error) {
+      const errorMessage =
+        error instanceof ConflictException
+          ? (error.getResponse() as { message: string }).message
+          : error.message.replace(/^ConflictException: /, '') ||
+            "Erreur lors de la recupération d'un role.";
+
       return {
-        message: 'Erreur lors de la recupération du role.',
+        message: errorMessage,
         status: HttpStatus.INTERNAL_SERVER_ERROR,
       };
     }
@@ -137,8 +150,14 @@ export class RoleController {
         data: [],
       };
     } catch (error) {
+      const errorMessage =
+        error instanceof ConflictException
+          ? (error.getResponse() as { message: string }).message
+          : error.message.replace(/^ConflictException: /, '') ||
+            "Erreur lors de la recherche d'un role.";
+
       return {
-        message: 'Erreur lors de la recupération du role.',
+        message: errorMessage,
         status: HttpStatus.INTERNAL_SERVER_ERROR,
       };
     }
@@ -164,8 +183,14 @@ export class RoleController {
         status: HttpStatus.NOT_FOUND,
       };
     } catch (error) {
+      const errorMessage =
+        error instanceof ConflictException
+          ? (error.getResponse() as { message: string }).message
+          : error.message.replace(/^ConflictException: /, '') ||
+            "Erreur lors de la mise à jour d'un role.";
+
       return {
-        message: 'Erreur lors de la mise à jour du role.',
+        message: errorMessage,
         status: HttpStatus.INTERNAL_SERVER_ERROR,
       };
     }
@@ -189,8 +214,14 @@ export class RoleController {
         status: HttpStatus.NOT_FOUND,
       };
     } catch (error) {
+      const errorMessage =
+        error instanceof ConflictException
+          ? (error.getResponse() as { message: string }).message
+          : error.message.replace(/^ConflictException: /, '') ||
+            "Erreur lors de la suppression d'un role.";
+
       return {
-        message: 'Erreur lors de la supression du role.',
+        message: errorMessage,
         status: HttpStatus.INTERNAL_SERVER_ERROR,
       };
     }

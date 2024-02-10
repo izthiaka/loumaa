@@ -13,7 +13,7 @@ import {
   Query,
   UploadedFile,
 } from '@nestjs/common';
-import { User } from '../schemas/user.schema';
+import { User } from '../entities/user.schema';
 import { UserService } from '../services/user.service';
 import {
   CreateUserDto,
@@ -213,7 +213,7 @@ export class UserController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            "Erreur lors de l'ajout d'un utilisateur.";
+            "Erreur lors de la mise à jour d'un utilisateur.";
 
       return {
         message: errorMessage,
@@ -249,7 +249,7 @@ export class UserController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            "Erreur lors de l'ajout d'un utilisateur.";
+            "Erreur lors de la mise à jour d'un utilisateur.";
 
       return {
         message: errorMessage,
@@ -300,7 +300,7 @@ export class UserController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            "Erreur lors de l'ajout d'un utilisateur.";
+            "Erreur lors de l'upload de l'image d'un utilisateur.";
 
       return {
         message: errorMessage,
@@ -331,7 +331,7 @@ export class UserController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            "Erreur lors de l'ajout d'un utilisateur.";
+            "Erreur lors de la suppression de l'utilisateur.";
 
       return {
         message: errorMessage,

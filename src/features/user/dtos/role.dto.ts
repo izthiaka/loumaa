@@ -1,5 +1,5 @@
 import { IsString, IsNotEmpty } from 'class-validator';
-import { Role } from '../schemas/role.schema';
+import { Role } from '../entities/role.schema';
 
 export class CreateRoleDto {
   @IsString({ message: "L'input [nom] doit être une chaîne de caractères." })
