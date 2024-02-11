@@ -17,6 +17,7 @@ import {
   SignInDto,
   SignUpDto,
   TokenDto,
+  UpdatePasswordDto,
 } from './dto/auth.dto';
 import { AuthGuard } from 'src/guards/auth/auth.guard';
 import { Request } from 'express';
@@ -95,11 +96,32 @@ export class AuthController {
   @Get('me')
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
-  async profil(@Req() request: Request & { matricule: string }) {
-    const req = request.matricule;
-    const profil = await this.authService.profil(req);
-    const result = new ProdilSpecificFieldDto(profil);
-    return result;
+  async profil(@Req() request: Request & { matricule: string }): Promise<{
+    message: string;
+    status: number;
+    data?: ProdilSpecificFieldDto;
+  }> {
+    try {
+      const req = request.matricule;
+      const profil = await this.authService.profil(req);
+      const result = new ProdilSpecificFieldDto(profil);
+      return {
+        message: 'Récupération Profil connecté réussie.',
+        status: HttpStatus.CREATED,
+        data: result,
+      };
+    } catch (error) {
+      const errorMessage =
+        error instanceof ConflictException
+          ? (error.getResponse() as { message: string }).message
+          : error.message.replace(/^ConflictException: /, '') ||
+            'Erreur lors de la récupération du profil.';
+
+      return {
+        message: errorMessage,
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+      };
+    }
   }
 
   @Post('me/refresh_token')
@@ -108,32 +130,114 @@ export class AuthController {
   async refreshToken(
     @Req() request: Request & { matricule: string },
   ): Promise<{ message: string; status: number; data?: TokenDto }> {
-    const req = request.matricule;
-    const tokenRefresh = await this.authService.refreshToken(req);
+    try {
+      const req = request.matricule;
+      const tokenRefresh = await this.authService.refreshToken(req);
 
-    const result = new TokenDto(
-      tokenRefresh.token,
-      tokenRefresh.refreshToken,
-      tokenRefresh.expireAt,
-      tokenRefresh.refreshExpireAt,
-    );
-    return {
-      message: 'Token rafraichi avec succès.',
-      status: HttpStatus.OK,
-      data: result,
-    };
+      const result = new TokenDto(
+        tokenRefresh.token,
+        tokenRefresh.refreshToken,
+        tokenRefresh.expireAt,
+        tokenRefresh.refreshExpireAt,
+      );
+      return {
+        message: 'Token rafraichi avec succès.',
+        status: HttpStatus.OK,
+        data: result,
+      };
+    } catch (error) {
+      const errorMessage =
+        error instanceof ConflictException
+          ? (error.getResponse() as { message: string }).message
+          : error.message.replace(/^ConflictException: /, '') ||
+            'Erreur lors de la mise à jour du token.';
+
+      return {
+        message: errorMessage,
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+      };
+    }
   }
 
   @Put('me/update_password')
+  @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
-  updatePassword() {
-    return this.authService.updatePassword();
+  async updatePassword(
+    @Body() updatePasswordDto: UpdatePasswordDto,
+    @Req() request: Request & { matricule: string },
+  ) {
+    try {
+      const req = request.matricule;
+      const profil = await this.authService.profil(req);
+
+      if (profil) {
+        const { password, password_confirm } = updatePasswordDto;
+        if (password !== password_confirm) {
+          return {
+            message: 'Les mots de passe ne concordent pas.',
+            status: HttpStatus.BAD_REQUEST,
+          };
+        }
+
+        const result = await this.authService.updatePassword(
+          profil,
+          updatePasswordDto,
+        );
+        return {
+          message: 'Mise à jour mot de passe réussie.',
+          status: HttpStatus.OK,
+          data: result,
+        };
+      }
+      return {
+        message: 'Profil utilisateur introuvable.',
+        status: HttpStatus.NOT_FOUND,
+      };
+    } catch (error) {
+      const errorMessage =
+        error instanceof ConflictException
+          ? (error.getResponse() as { message: string }).message
+          : error.message.replace(/^ConflictException: /, '') ||
+            'Erreur lors de la mise à jour du mot de passe.';
+
+      return {
+        message: errorMessage,
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+      };
+    }
   }
 
   @Delete('me/delete_account')
+  @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
-  deleteAccount() {
-    return this.authService.deleteAccount();
+  async deleteAccount(@Req() request: Request & { matricule: string }) {
+    try {
+      const req = request.matricule;
+      const profil = await this.authService.profil(req);
+      if (profil) {
+        const result = await this.authService.deleteAccount(profil);
+        return {
+          message: 'Suppression de compte réussie.',
+          status: HttpStatus.OK,
+          data: result,
+        };
+      }
+      return {
+        message: 'Profil utilisateur introuvable.',
+        status: HttpStatus.NOT_FOUND,
+      };
+    } catch (error) {
+      const errorMessage =
+        error instanceof ConflictException
+          ? (error.getResponse() as { message: string }).message
+          : error.message.replace(/^ConflictException: /, '') ||
+            'Erreur lors de la suppression de compte.';
+
+      return {
+        message: errorMessage,
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+      };
+    }
   }
 
   @Post('logout')

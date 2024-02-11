@@ -68,6 +68,20 @@ export class TokenDto {
   }
 }
 
+export class UpdatePasswordDto {
+  @IsNotEmpty({ message: "L'input [old_password] est requis." })
+  readonly old_password: string;
+
+  @IsNotEmpty({ message: "L'input [password] est requis." })
+  @MinLength(8, {
+    message: 'Le mot de passe doit comporté au minimum de 8 caractéres.',
+  })
+  readonly password: string;
+
+  @IsNotEmpty({ message: "L'input [password_confirm] est requis." })
+  readonly password_confirm: string;
+}
+
 export class ProdilSpecificFieldDto {
   name: string;
   matricule: string;

@@ -1,6 +1,6 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
-import { SignInDto, SignUpDto } from './dto/auth.dto';
+import { SignInDto, SignUpDto, UpdatePasswordDto } from './dto/auth.dto';
 import { UserService } from '../user/services/user.service';
 import { RoleService } from '../user/services/role.service';
 import MatriculeGenerate from 'src/core/utils/matricule_generate';
@@ -189,6 +189,35 @@ export class AuthService {
     }
   }
 
+  async updatePassword(user: any, updatePasswordDto: UpdatePasswordDto) {
+    try {
+      const passwordIsValid = this.bcrypt.compare(
+        updatePasswordDto.old_password,
+        user.password,
+      );
+      if (!passwordIsValid) throw new Error('Ancien Mot de passe incorrect.');
+
+      const hashedPassword = this.bcrypt.hash(updatePasswordDto.password);
+      await this.userService.updatePassword(user._id, hashedPassword);
+      return true;
+    } catch (error) {
+      throw Error(error);
+    }
+  }
+
+  async deleteAccount(auth: any) {
+    try {
+      const { _id } = auth;
+
+      await this.userService.deleteUser(_id);
+      await this.userSessionService.deleteSession(_id);
+
+      return true;
+    } catch (error) {
+      throw Error(error);
+    }
+  }
+
   forgetPassword() {
     return 'data return';
   }
@@ -198,14 +227,6 @@ export class AuthService {
   }
 
   resetPassword() {
-    return 'data return';
-  }
-
-  updatePassword() {
-    return 'data return';
-  }
-
-  deleteAccount() {
     return 'data return';
   }
 }

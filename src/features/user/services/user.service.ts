@@ -331,6 +331,29 @@ export class UserService {
     }
   }
 
+  async updatePassword(
+    id: string,
+    updatedPassword: string,
+  ): Promise<User | null> {
+    try {
+      const existingUser = await this.userModel.findById(id).exec();
+
+      if (!existingUser) {
+        throw new NotFoundException(
+          `Utilisateur avec l'ID [${id}] non trouvé.`,
+        );
+      }
+
+      const updatedUser = await this.userModel
+        .findByIdAndUpdate(id, { password: updatedPassword }, { new: true })
+        .exec();
+
+      return updatedUser;
+    } catch (error) {
+      throw Error(error);
+    }
+  }
+
   async updateStatusUser(
     id: string,
     updateUserStatusDto: UpdateStatusUserDto,
