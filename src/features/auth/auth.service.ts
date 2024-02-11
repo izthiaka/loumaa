@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
+import { Model } from 'mongoose';
 import { SignInDto, SignUpDto } from './dto/auth.dto';
 import { UserService } from '../user/services/user.service';
 import { RoleService } from '../user/services/role.service';
@@ -6,52 +7,103 @@ import MatriculeGenerate from 'src/core/utils/matricule_generate';
 import BcryptImplement from 'src/core/config/bcrypt';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from '../user/entities/user.schema';
-import { Model } from 'mongoose';
 import UserStatusAccount from 'src/core/constant/user_status_account';
 import { isEmail, isPhoneNumber } from 'class-validator';
 import { JwtService } from '@nestjs/jwt';
+import { UserSessionService } from '../user/services/user_session/user_session.service';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectModel(User.name) private readonly userModel: Model<User>,
+    @InjectModel(User.name)
+    private readonly userModel: Model<User>,
     private readonly userService: UserService,
     private readonly roleService: RoleService,
+    private readonly userSessionService: UserSessionService,
     private readonly matricule: MatriculeGenerate,
     private readonly bcrypt: BcryptImplement,
     private readonly jwtService: JwtService,
   ) {}
 
   async signIn(signInDto: SignInDto) {
-    const { identifiant } = signInDto;
-    const { password } = signInDto;
+    try {
+      this.identifier(signInDto.identifiant);
+      const user = await this.userService.findByUsernameOrEmailOrPhone(
+        signInDto.identifiant,
+      );
+      if (user) {
+        this.validatePassword(signInDto.password, user.password);
+        this.checkAccountStatus(user.status);
 
-    this.identifier(identifiant);
-    const user =
-      await this.userService.findByUsernameOrEmailOrPhone(identifiant);
-    if (user) {
-      const passwordIsValid = this.bcrypt.compare(password, user.password);
-      if (!passwordIsValid)
-        throw new Error(
-          'Identifiant et ou Mot de passe incorrect. Veuillez réessayer.',
-        );
-
-      this.statusAccount(user.status);
-
-      const token = await this.generateAccessToken(user);
-      const refreshToken = await this.generateRefreshToken(user);
-
-      return {
-        token,
-        refreshToken,
-        expireAt: this.calculateExpiresIn(10),
-        refreshExpireAt: this.calculateExpiresIn(48),
-      };
+        const result = await this.generateToken(user);
+        return result;
+      }
+      throw new Error('Identifiant introuvable.');
+    } catch (error) {
+      throw Error(error);
     }
-    throw new Error('Identifiant introuvable.');
   }
 
-  identifier(identifier: string) {
+  async signUp(signUpDto: SignUpDto) {
+    const { phone, email, password } = signUpDto;
+    if (phone) {
+      const existingUserPhone = await this.userService.findUserByPhone(phone);
+      if (existingUserPhone) {
+        throw new Error(`Le numéro de téléphone [${phone}] existe déjà.`);
+      }
+    }
+
+    const existingUserEmail = await this.userService.findUserByEmail(email);
+    if (existingUserEmail) {
+      throw new Error('Cet e-mail est déja utilisé.');
+    }
+
+    const passwordHash = this.bcrypt.hash(password);
+
+    const role = await this.roleService.findRoleByName('Propriétaire');
+
+    const user = new this.userModel(signUpDto);
+    user.matricule = this.matricule.generate();
+    user.password = passwordHash;
+    user.role = role._id;
+
+    await user.save();
+
+    // Send email to user with confirm account link
+    /*const token = this.jwtService.sign({ id: user.id });
+     const url = `${process.env.FRONT_END_URL}/auth/confirm/${token}`;*/
+
+    //await this.sendConfirmAccountMail(user.email, user.matricule, url);
+    return true;
+  }
+
+  async refreshToken(auth: any) {
+    try {
+      const { username } = auth;
+      const user = await this.userService.findUserProfil(username);
+      if (user) {
+        const result = await this.generateToken(user);
+        return result;
+      }
+      throw new ConflictException(
+        'Utilisateur introuvable. Veuillez-vous connecter.',
+      );
+    } catch (error) {
+      throw Error(error);
+    }
+  }
+
+  async profil(auth: any) {
+    try {
+      const { username } = auth;
+      const user = await this.userService.findUserProfil(username);
+      return user;
+    } catch (error) {
+      throw Error(error);
+    }
+  }
+
+  private identifier(identifier: string) {
     const isIdentifiantEmail: boolean = isEmail(identifier);
     const isIdentifiantPhone: boolean = isPhoneNumber(identifier);
 
@@ -67,50 +119,20 @@ export class AuthService {
     return type;
   }
 
-  async signUp(signUpDto: SignUpDto) {
-    const { phone, email, password } = signUpDto;
-
-    if (phone) {
-      const existingUserPhone = await this.userService.findUserByPhone(phone);
-      if (existingUserPhone) {
-        throw new Error(`Le numéro de téléphone [${phone}] existe déjà.`);
-      }
-    }
-    const existingUserEmail = await this.userService.findUserByEmail(email);
-    if (existingUserEmail) {
-      throw new Error('Cet e-mail est déja utilisé.');
-    }
-
-    const passwordHash = this.bcrypt.hash(password);
-
-    const role = await this.roleService.findRoleByName('Propriétaire');
-
-    const user = new this.userModel(signUpDto);
-    user.matricule = this.matricule.generate();
-    user.password = passwordHash;
-    user.status = UserStatusAccount.getActivatedStatusLibelle();
-    user.role = role._id;
-
-    await user.save();
-    return true;
+  private validatePassword(inputPassword: string, userPassword: string) {
+    const passwordIsValid = this.bcrypt.compare(inputPassword, userPassword);
+    if (!passwordIsValid)
+      throw new Error(
+        'Identifiant et ou Mot de passe incorrect. Veuillez réessayer.',
+      );
   }
 
-  async generateAccessToken(user: User): Promise<string> {
-    const payload = { username: user.matricule, sub: user._id };
-    return this.jwtService.sign(payload);
-  }
-
-  async generateRefreshToken(user: User): Promise<string> {
-    const payload = { username: user.matricule, sub: user._id };
-    return this.jwtService.sign(payload, { expiresIn: '2d' });
-  }
-
-  calculateExpiresIn(hours: number) {
+  private calculateExpiresIn(hours: number) {
     const expiresInInSeconds = hours * 3600;
     return expiresInInSeconds;
   }
 
-  statusAccount(status: string) {
+  private checkAccountStatus(status: string) {
     if (status === UserStatusAccount.getPendingStatusLibelle())
       throw new Error(
         'Votre compte est en attente de validation. Veuillez patienter.',
@@ -125,12 +147,46 @@ export class AuthService {
       );
   }
 
-  refreshToken() {
-    return 'data return';
+  async generateAccessToken(user: User): Promise<string> {
+    const payload = { username: user.matricule, sub: user._id };
+    return this.jwtService.sign(payload);
   }
 
-  logOut() {
-    return 'data return';
+  async generateRefreshToken(user: User): Promise<string> {
+    const payload = { username: user.matricule, sub: user._id };
+    return this.jwtService.sign(payload, { expiresIn: '2d' });
+  }
+
+  private async generateToken(user: User): Promise<any> {
+    const token = await this.generateAccessToken(user);
+    const refreshToken = await this.generateRefreshToken(user);
+
+    await this.userSessionService.updateSession(user._id, {
+      $set: {
+        user: user._id,
+        token,
+        refresh_token: refreshToken,
+        device: 'null',
+      },
+    });
+
+    return {
+      token,
+      refreshToken,
+      expireAt: this.calculateExpiresIn(10),
+      refreshExpireAt: this.calculateExpiresIn(48),
+    };
+  }
+
+  async logOut(auth: any) {
+    try {
+      const { username } = auth;
+      const user = await this.userService.findUserProfil(username);
+      await this.userSessionService.deleteSession(user._id);
+      return true;
+    } catch (error) {
+      throw Error(error);
+    }
   }
 
   forgetPassword() {
@@ -150,10 +206,6 @@ export class AuthService {
   }
 
   deleteAccount() {
-    return 'data return';
-  }
-
-  profil() {
     return 'data return';
   }
 }

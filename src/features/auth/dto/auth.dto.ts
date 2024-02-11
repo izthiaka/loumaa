@@ -6,6 +6,8 @@ import {
   IsString,
   MinLength,
 } from 'class-validator';
+import { RoleSpecificFieldDto } from 'src/features/user/dtos/role.dto';
+import { UserSessionSpecificFieldDto } from 'src/features/user/dtos/user_session.dto';
 
 export class SignUpDto {
   @IsString({
@@ -63,5 +65,34 @@ export class TokenDto {
     this.expire_at = expire_at;
     this.refresh_token = refresh_token;
     this.refresh_expire_at = refresh_expire_at;
+  }
+}
+
+export class ProdilSpecificFieldDto {
+  name: string;
+  matricule: string;
+  gender: string;
+  email: string;
+  phone: string;
+  status: string;
+  photo: string;
+  role: object;
+  sessions: any;
+  authorizations: any;
+
+  constructor(user: any) {
+    const sessions = user.sessions.map((session) => {
+      return new UserSessionSpecificFieldDto(session);
+    });
+    this.name = user.name;
+    this.matricule = user.matricule;
+    this.gender = user.gender;
+    this.email = user.email;
+    this.phone = user.phone;
+    this.status = user.status;
+    this.photo = user.photo ? user.photo : null;
+    this.role = new RoleSpecificFieldDto(user.role);
+    this.sessions = sessions;
+    this.authorizations = [];
   }
 }

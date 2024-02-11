@@ -8,9 +8,18 @@ import {
   HttpStatus,
   Post,
   Put,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { SignInDto, SignUpDto, TokenDto } from './dto/auth.dto';
+import {
+  ProdilSpecificFieldDto,
+  SignInDto,
+  SignUpDto,
+  TokenDto,
+} from './dto/auth.dto';
+import { AuthGuard } from 'src/guards/auth/auth.guard';
+import { Request } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -83,16 +92,82 @@ export class AuthController {
     }
   }
 
-  @Post('refresh_token')
+  @Get('me')
+  @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
-  refreshToken() {
-    return this.authService.refreshToken();
+  async profil(@Req() request: Request & { matricule: string }) {
+    const req = request.matricule;
+    const profil = await this.authService.profil(req);
+    const result = new ProdilSpecificFieldDto(profil);
+    return result;
+  }
+
+  @Post('me/refresh_token')
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async refreshToken(
+    @Req() request: Request & { matricule: string },
+  ): Promise<{ message: string; status: number; data?: TokenDto }> {
+    const req = request.matricule;
+    const tokenRefresh = await this.authService.refreshToken(req);
+
+    const result = new TokenDto(
+      tokenRefresh.token,
+      tokenRefresh.refreshToken,
+      tokenRefresh.expireAt,
+      tokenRefresh.refreshExpireAt,
+    );
+    return {
+      message: 'Token rafraichi avec succès.',
+      status: HttpStatus.OK,
+      data: result,
+    };
+  }
+
+  @Put('me/update_password')
+  @HttpCode(HttpStatus.OK)
+  updatePassword() {
+    return this.authService.updatePassword();
+  }
+
+  @Delete('me/delete_account')
+  @HttpCode(HttpStatus.OK)
+  deleteAccount() {
+    return this.authService.deleteAccount();
   }
 
   @Post('logout')
+  @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
-  logOut() {
-    return this.authService.logOut();
+  async logOut(
+    @Req() request: Request & { matricule: object },
+  ): Promise<{ message: string; status: number; data?: boolean }> {
+    try {
+      const req = request.matricule;
+      await this.checkToken(req);
+      const result = await this.authService.logOut(req);
+      return {
+        message: 'Déconnexion réussie.',
+        status: HttpStatus.OK,
+        data: result,
+      };
+    } catch (error) {
+      const errorMessage =
+        error instanceof ConflictException
+          ? (error.getResponse() as { message: string }).message
+          : error.message.replace(/^ConflictException: /, '') ||
+            'Erreur lors de la déconnexion.';
+
+      return {
+        message: errorMessage,
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+      };
+    }
+  }
+
+  async checkToken(payload: object) {
+    console.log('check token' + payload);
+    return 'data return';
   }
 
   @Post('signin/forget_password')
@@ -111,23 +186,5 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   resetPassword() {
     return this.authService.resetPassword();
-  }
-
-  @Put('me/update_password')
-  @HttpCode(HttpStatus.OK)
-  updatePassword() {
-    return this.authService.updatePassword();
-  }
-
-  @Delete('me/delete_account')
-  @HttpCode(HttpStatus.OK)
-  deleteAccount() {
-    return this.authService.deleteAccount();
-  }
-
-  @Get('me')
-  @HttpCode(HttpStatus.OK)
-  profil() {
-    return this.authService.profil();
   }
 }

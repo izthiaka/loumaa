@@ -11,12 +11,14 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { jwtConstants } from './constants';
 import { JwtStrategy } from './jwt.strategy';
+import { UserSessionModule } from '../user/modules/user_session.module';
 
 @Module({
   imports: [
     UserModule,
     RoleModule,
     PassportModule,
+    UserSessionModule,
     JwtModule.register({
       secret: jwtConstants.secret,
       signOptions: { expiresIn: '10h' },
