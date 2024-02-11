@@ -183,6 +183,45 @@ export class UserService {
     }
   }
 
+  async findUserProfil(matricule: string): Promise<User | null> {
+    try {
+      const user = await this.userModel
+        .aggregate([
+          {
+            $match: {
+              matricule,
+            },
+          },
+          {
+            $lookup: {
+              from: 'roles',
+              localField: 'role',
+              foreignField: '_id',
+              as: 'role',
+            },
+          },
+          {
+            $unwind: {
+              path: '$role',
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $lookup: {
+              from: 'usersessions',
+              localField: '_id',
+              foreignField: 'user',
+              as: 'sessions',
+            },
+          },
+        ])
+        .exec();
+      return user[0];
+    } catch (error) {
+      throw Error(error);
+    }
+  }
+
   async findUserByPhone(phone: string): Promise<User | null> {
     try {
       const user = await this.userModel
@@ -387,6 +426,46 @@ export class UserService {
           },
         ])
         .exec();
+    } catch (error) {
+      throw Error(error);
+    }
+  }
+
+  async findUserByToken(token: string): Promise<User | null> {
+    try {
+      const user = await this.userModel
+        .aggregate([
+          {
+            $lookup: {
+              from: 'roles',
+              localField: 'role',
+              foreignField: '_id',
+              as: 'role',
+            },
+          },
+          {
+            $unwind: {
+              path: '$role',
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $lookup: {
+              from: 'usersessions',
+              localField: '_id',
+              foreignField: 'user',
+              as: 'sessions',
+            },
+          },
+          {
+            $match: {
+              'sessions.token': token,
+            },
+          },
+        ])
+        .exec();
+
+      return user[0];
     } catch (error) {
       throw Error(error);
     }
