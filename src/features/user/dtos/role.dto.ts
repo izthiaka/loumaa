@@ -1,15 +1,15 @@
 import { IsString, IsNotEmpty } from 'class-validator';
-import { Role } from '../entities/role.schema';
+import { Role } from '../entities/role/role.schema';
 
 export class CreateRoleDto {
-  @IsString({ message: "L'input [nom] doit être une chaîne de caractères." })
-  @IsNotEmpty({ message: "L'input [nom] est requis." })
+  @IsString({ message: 'Input [name] must be a character string.' })
+  @IsNotEmpty({ message: 'Input [name] is required.' })
   readonly name: string;
 }
 
 export class UpdateRoleDto {
-  @IsString({ message: "L'input [nom] doit être une chaîne de caractères." })
-  @IsNotEmpty({ message: "L'input [nom] est requis." })
+  @IsString({ message: 'Input [name] must be a character string.' })
+  @IsNotEmpty({ message: 'Input [name] is required.' })
   readonly name?: string;
 }
 

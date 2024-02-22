@@ -8,42 +8,43 @@ import {
 } from 'class-validator';
 import { RoleSpecificFieldDto } from 'src/features/user/dtos/role.dto';
 import { UserSessionSpecificFieldDto } from 'src/features/user/dtos/user_session.dto';
+import { UserSession } from 'src/features/user/entities/user_session/user_session.schema';
 
 export class SignUpDto {
   @IsString({
-    message: "L'input [name] doit être une chaîne de caractères.",
+    message: 'Input [name] must be a character string.',
   })
-  @IsNotEmpty({ message: "L'input [nom] est requis." })
+  @IsNotEmpty({ message: 'Input [name] is required.' })
   readonly name: string;
 
   @IsOptional()
   @IsEmail(
     {},
-    { message: "L'adresse e-mail doit être une adresse e-mail valide." },
+    { message: 'The e-mail address must be a valid e-mail address.' },
   )
   readonly email?: string;
 
-  @IsNotEmpty({ message: "L'input [phone] est requis." })
+  @IsNotEmpty({ message: 'Input [phone] is required.' })
   @IsPhoneNumber(undefined, {
-    message: "L'input [phone] doit être un numéro de téléphone valide.",
+    message: 'The [phone] input must be a valid phone number.',
   })
   readonly phone: string;
 
-  @IsNotEmpty({ message: "L'input [password] est requis." })
+  @IsNotEmpty({ message: 'Input [password] is required.' })
   @MinLength(8, {
-    message: 'Le mot de passe doit comporté au minimum de 8 caractéres.',
+    message: 'The password must be at least 8 characters long.',
   })
   readonly password: string;
 
-  @IsNotEmpty({ message: "L'input [password_confirm] est requis." })
+  @IsNotEmpty({ message: 'The [password_confirm] input is required.' })
   readonly password_confirm: string;
 }
 
 export class SignInDto {
-  @IsNotEmpty({ message: "L'input [identifiant] est requis." })
-  readonly identifiant: string;
+  @IsNotEmpty({ message: 'Input [identifier] is required.' })
+  readonly identifier: string;
 
-  @IsNotEmpty({ message: "L'input [password] est requis." })
+  @IsNotEmpty({ message: 'Input [password] is required.' })
   readonly password: string;
 }
 
@@ -69,20 +70,20 @@ export class TokenDto {
 }
 
 export class UpdatePasswordDto {
-  @IsNotEmpty({ message: "L'input [old_password] est requis." })
+  @IsNotEmpty({ message: 'The [old_password] input is required.' })
   readonly old_password: string;
 
-  @IsNotEmpty({ message: "L'input [password] est requis." })
+  @IsNotEmpty({ message: 'Input [password] is required.' })
   @MinLength(8, {
-    message: 'Le mot de passe doit comporté au minimum de 8 caractéres.',
+    message: 'The password must be at least 8 characters long.',
   })
   readonly password: string;
 
-  @IsNotEmpty({ message: "L'input [password_confirm] est requis." })
+  @IsNotEmpty({ message: 'The [password_confirm] input is required.' })
   readonly password_confirm: string;
 }
 
-export class ProdilSpecificFieldDto {
+export class ProfileSpecificFieldDto {
   name: string;
   matricule: string;
   gender: string;
@@ -95,7 +96,7 @@ export class ProdilSpecificFieldDto {
   authorizations: any;
 
   constructor(user: any) {
-    const sessions = user.sessions.map((session) => {
+    const sessions = user.sessions.map((session: UserSession) => {
       return new UserSessionSpecificFieldDto(session);
     });
     this.name = user.name;
@@ -109,4 +110,14 @@ export class ProdilSpecificFieldDto {
     this.sessions = sessions;
     this.authorizations = [];
   }
+}
+
+export class CheckIdentifierDto {
+  @IsNotEmpty({ message: 'Input [identifier] is required.' })
+  readonly identifier: string;
+}
+
+export class CheckOTPDto {
+  @IsNotEmpty({ message: 'Input [code] is required.' })
+  readonly code: string;
 }

@@ -2,7 +2,7 @@ import * as crypto from 'crypto';
 
 const CODELENGTH = 10;
 
-export default class MatriculeGenerate {
+export class MatriculeGenerate {
   generate(prefix = '', length: number = CODELENGTH) {
     const alpha = this.#alpha();
     const numeric = this.#numeric();

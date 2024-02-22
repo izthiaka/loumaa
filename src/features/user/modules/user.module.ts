@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { UserController } from '../controllers/user.controller';
-import { User, UserSchema } from '../entities/user.schema';
-import { UserService } from '../services/user.service';
-import MatriculeGenerate from 'src/core/utils/matricule_generate';
-import { RoleService } from '../services/role.service';
+import { UserController } from '../controllers/user/user.controller';
+import { User, UserSchema } from '../entities/user/user.schema';
+import { UserService } from '../services/user/user.service';
+import { MatriculeGenerate } from 'src/core/utils/matricule_generate/matricule_generate.util';
+import { RoleService } from '../services/role/role.service';
 import { RoleModule } from './role.module';
 import BcryptImplement from 'src/core/config/bcrypt';
 

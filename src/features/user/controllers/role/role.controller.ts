@@ -11,14 +11,14 @@ import {
   Query,
   ConflictException,
 } from '@nestjs/common';
-import { Role } from '../entities/role.schema';
-import { RoleService } from '../services/role.service';
-import MatriculeGenerate from 'src/core/utils/matricule_generate';
+import { Role } from '../../entities/role/role.schema';
+import { RoleService } from '../../services/role/role.service';
+import { MatriculeGenerate } from 'src/core/utils/matricule_generate/matricule_generate.util';
 import {
   CreateRoleDto,
   RoleSpecificFieldDto,
   UpdateRoleDto,
-} from '../dtos/role.dto';
+} from '../../dtos/role.dto';
 
 @Controller('users/roles')
 export class RoleController {
@@ -38,7 +38,7 @@ export class RoleController {
       );
       if (existingRole) {
         return {
-          message: `Le role [${createRoleDto.name}] existe déjà.`,
+          message: `The [${createRoleDto.name}] role already exists.`,
           status: HttpStatus.CONFLICT,
         };
       }
@@ -49,13 +49,13 @@ export class RoleController {
 
       const createdRole: Role = await this.roleService.createRole(body as Role);
       return {
-        message: 'Role créé avec succès.',
+        message: 'Role successfully created.',
         status: HttpStatus.CREATED,
         data: createdRole,
       };
     } catch (error) {
       return {
-        message: "Erreur lors de la création d'un role.",
+        message: 'Error when creating a role.',
         status: HttpStatus.INTERNAL_SERVER_ERROR,
       };
     }
@@ -74,7 +74,7 @@ export class RoleController {
         (value) => new RoleSpecificFieldDto(value),
       );
       return {
-        message: 'Liste des roles récupérée avec succès.',
+        message: 'Role list successfully retrieved.',
         status: HttpStatus.OK,
         data: rolesResponse,
       };
@@ -83,7 +83,7 @@ export class RoleController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            'Erreur lors de la recupération des roles.';
+            'Error when retrieving roles.';
 
       return {
         message: errorMessage,
@@ -103,13 +103,13 @@ export class RoleController {
       if (role) {
         const roleDetail = new RoleSpecificFieldDto(role);
         return {
-          message: "Détail d'un role récupéré avec succès.",
+          message: 'Detail of a successfully recovered role.',
           status: HttpStatus.OK,
           data: roleDetail,
         };
       }
       return {
-        message: 'Role introuvable',
+        message: 'Role not found',
         status: HttpStatus.NOT_FOUND,
       };
     } catch (error) {
@@ -117,7 +117,7 @@ export class RoleController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            "Erreur lors de la recupération d'un role.";
+            'Error when retrieving a role.';
 
       return {
         message: errorMessage,
@@ -139,13 +139,13 @@ export class RoleController {
           (value) => new RoleSpecificFieldDto(value),
         );
         return {
-          message: 'Recherche role récupéré avec succès.',
+          message: 'Search role successfully recovered.',
           status: HttpStatus.OK,
           data: roleSearchResponse,
         };
       }
       return {
-        message: 'Pas de role trouvé.',
+        message: 'No role found.',
         status: HttpStatus.OK,
         data: [],
       };
@@ -154,7 +154,7 @@ export class RoleController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            "Erreur lors de la recherche d'un role.";
+            'Error when searching for a role.';
 
       return {
         message: errorMessage,
@@ -173,13 +173,13 @@ export class RoleController {
       if (role) {
         const data = await this.roleService.updateRole(role._id, updateRoleDto);
         return {
-          message: "Modification d'un role récupéré avec succès.",
+          message: 'Modification of a successfully recovered role.',
           status: HttpStatus.OK,
           data: data,
         };
       }
       return {
-        message: 'Role introuvable',
+        message: 'Role not found',
         status: HttpStatus.NOT_FOUND,
       };
     } catch (error) {
@@ -187,7 +187,7 @@ export class RoleController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            "Erreur lors de la mise à jour d'un role.";
+            'Error when updating a role.';
 
       return {
         message: errorMessage,
@@ -205,12 +205,12 @@ export class RoleController {
       if (role) {
         await this.roleService.deleteRole(role._id);
         return {
-          message: 'Role supprimé avec succès.',
+          message: 'Role successfully deleted.',
           status: HttpStatus.OK,
         };
       }
       return {
-        message: 'Role introuvable',
+        message: 'Role not found',
         status: HttpStatus.NOT_FOUND,
       };
     } catch (error) {
@@ -218,7 +218,7 @@ export class RoleController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            "Erreur lors de la suppression d'un role.";
+            'Error when deleting a role.';
 
       return {
         message: errorMessage,

@@ -1,7 +1,7 @@
 import * as moment from 'moment';
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UserService } from 'src/features/user/services/user.service';
+import { UserService } from 'src/features/user/services/user/user.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {

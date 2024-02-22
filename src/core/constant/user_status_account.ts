@@ -7,8 +7,8 @@ export default class UserStatusAccount {
     return 'ACTIVE';
   }
 
-  static getDesactivatedStatusLibelle(): string {
-    return 'DESACTIVATED';
+  static getDeActivatedStatusLibelle(): string {
+    return 'DEACTIVATED';
   }
 
   static getBannedStatusLibelle(): string {
@@ -18,7 +18,7 @@ export default class UserStatusAccount {
   static validation = [
     UserStatusAccount.getPendingStatusLibelle(),
     UserStatusAccount.getActivatedStatusLibelle(),
-    UserStatusAccount.getDesactivatedStatusLibelle(),
+    UserStatusAccount.getDeActivatedStatusLibelle(),
     UserStatusAccount.getBannedStatusLibelle(),
   ];
 }

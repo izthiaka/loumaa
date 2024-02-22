@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
-import { Role } from './role.schema';
+import { Role } from '../role/role.schema';
 import UserStatusAccount from 'src/core/constant/user_status_account';
 import { IsIn } from 'class-validator';
 
@@ -31,7 +31,7 @@ export class User extends Document {
         `${props.value} n'est pas un statut valide.`,
     },
   })
-  @IsIn(UserStatusAccount.validation, { message: 'Statut invalide.' })
+  @IsIn(UserStatusAccount.validation, { message: 'Status invalid.' })
   status: string;
 
   @Prop({ required: false })
@@ -42,6 +42,9 @@ export class User extends Document {
 
   @Prop({ required: true })
   password: string;
+
+  @Prop({ required: false })
+  identifier_token: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

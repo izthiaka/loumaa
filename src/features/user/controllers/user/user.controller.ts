@@ -13,16 +13,16 @@ import {
   Query,
   UploadedFile,
 } from '@nestjs/common';
-import { User } from '../entities/user.schema';
-import { UserService } from '../services/user.service';
+import { User } from '../../entities/user/user.schema';
+import { UserService } from '../../services/user/user.service';
 import {
   CreateUserDto,
   PictureUploadDto,
   UpdateStatusUserDto,
   UpdateUserDto,
   UserSpecificFieldDto,
-} from '../dtos/user.dto';
-import { RoleService } from '../services/role.service';
+} from '../../dtos/user.dto';
+import { RoleService } from '../../services/role/role.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from 'src/core/config/multer.config';
 import { Request } from 'express';
@@ -45,7 +45,7 @@ export class UserController {
       const role = await this.roleService.findRoleByCode(createUserDto.role);
       if (!role) {
         return {
-          message: `Le role [${createUserDto.role}] n'existe pas.`,
+          message: `The role [${createUserDto.role}] does not exist.`,
           status: HttpStatus.CONFLICT,
         };
       }
@@ -57,7 +57,7 @@ export class UserController {
 
       const createdUser: User = await this.userService.createUser(body);
       return {
-        message: 'Utilisateur créé avec succès.',
+        message: 'User successfully created.',
         status: HttpStatus.CREATED,
         data: createdUser,
       };
@@ -66,7 +66,7 @@ export class UserController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            "Erreur lors de l'ajout d'un utilisateur.";
+            'Error adding a user.';
 
       return {
         message: errorMessage,
@@ -83,12 +83,12 @@ export class UserController {
     data?: UserSpecificFieldDto[];
   }> {
     try {
-      const utilisateurs = await this.userService.findAllUsers();
-      const usersResponse = utilisateurs.map(
+      const users = await this.userService.findAllUsers();
+      const usersResponse = users.map(
         (value) => new UserSpecificFieldDto(value),
       );
       return {
-        message: 'Liste des utilisateurs récupérée avec succès.',
+        message: 'User list successfully retrieved.',
         status: HttpStatus.OK,
         data: usersResponse,
       };
@@ -97,7 +97,7 @@ export class UserController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            'Erreur lors de la récupération des utilisateur.';
+            'Error during user recovery.';
 
       return {
         message: errorMessage,
@@ -117,13 +117,13 @@ export class UserController {
       if (user) {
         const userDetail = new UserSpecificFieldDto(user);
         return {
-          message: "Détail d'un role récupéré avec succès.",
+          message: 'Detail of a successfully recovered role.',
           status: HttpStatus.OK,
           data: userDetail,
         };
       }
       return {
-        message: 'Utilisateur introuvable',
+        message: 'User not found',
         status: HttpStatus.NOT_FOUND,
       };
     } catch (error) {
@@ -131,7 +131,7 @@ export class UserController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            "Erreur lors de la récupération d'un utilisateur.";
+            'Error during user recovery.';
 
       return {
         message: errorMessage,
@@ -147,19 +147,19 @@ export class UserController {
     data?: UserSpecificFieldDto[];
   }> {
     try {
-      const utilisateurs = await this.userService.searchUser(search);
-      if (utilisateurs.length > 0) {
-        const userSearchResponse = utilisateurs.map(
+      const users = await this.userService.searchUser(search);
+      if (users.length > 0) {
+        const userSearchResponse = users.map(
           (value) => new UserSpecificFieldDto(value),
         );
         return {
-          message: 'Recherche utilisateur récupéré avec succès.',
+          message: 'User search successfully recovered.',
           status: HttpStatus.OK,
           data: userSearchResponse,
         };
       }
       return {
-        message: "Pas d'utilisateur trouvé.",
+        message: 'No user found.',
         status: HttpStatus.OK,
         data: [],
       };
@@ -168,7 +168,7 @@ export class UserController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            "Erreur lors de la recherche d'un utilisateur.";
+            'Error searching for a user.';
 
       return {
         message: errorMessage,
@@ -188,7 +188,7 @@ export class UserController {
         const role = await this.roleService.findRoleByCode(updateUserDto.role);
         if (!role) {
           return {
-            message: `Le role [${updateUserDto.role}] n'existe pas.`,
+            message: `The role [${updateUserDto.role}] does not exist.`,
             status: HttpStatus.CONFLICT,
           };
         }
@@ -199,13 +199,13 @@ export class UserController {
         };
         const updatedUser = await this.userService.updateUser(user._id, body);
         return {
-          message: 'Utilisateur mis à jour avec succès.',
+          message: 'User successfully updated.',
           status: HttpStatus.OK,
           data: updatedUser,
         };
       }
       return {
-        message: 'Utilisateur introuvable',
+        message: 'User not found',
         status: HttpStatus.NOT_FOUND,
       };
     } catch (error) {
@@ -213,7 +213,7 @@ export class UserController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            "Erreur lors de la mise à jour d'un utilisateur.";
+            'Error updating a user.';
 
       return {
         message: errorMessage,
@@ -235,13 +235,13 @@ export class UserController {
           updateUserStatusDto,
         );
         return {
-          message: 'Status utilisateur mis à jour avec succès.',
+          message: 'User status successfully updated.',
           status: HttpStatus.OK,
           data: updatedUser,
         };
       }
       return {
-        message: 'Utilisateur introuvable',
+        message: 'User not found',
         status: HttpStatus.NOT_FOUND,
       };
     } catch (error) {
@@ -249,7 +249,7 @@ export class UserController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            "Erreur lors de la mise à jour d'un utilisateur.";
+            'Error updating a user.';
 
       return {
         message: errorMessage,
@@ -281,18 +281,18 @@ export class UserController {
             body,
           );
           return {
-            message: 'Photo utilisateur mise à jour avec succès.',
+            message: 'User photo successfully updated.',
             status: HttpStatus.OK,
             data: updatedUser,
           };
         }
         return {
-          message: "Pas d'image",
+          message: 'No image',
           status: HttpStatus.BAD_REQUEST,
         };
       }
       return {
-        message: 'Utilisateur introuvable',
+        message: 'User not found',
         status: HttpStatus.NOT_FOUND,
       };
     } catch (error) {
@@ -300,7 +300,7 @@ export class UserController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            "Erreur lors de l'upload de l'image d'un utilisateur.";
+            "Error uploading a user's image.";
 
       return {
         message: errorMessage,
@@ -318,12 +318,12 @@ export class UserController {
       if (role) {
         await this.userService.deleteUser(role._id);
         return {
-          message: 'Utilisateur supprimé avec succès.',
+          message: 'User successfully deleted.',
           status: HttpStatus.OK,
         };
       }
       return {
-        message: 'Utilisateur introuvable',
+        message: 'User not found',
         status: HttpStatus.NOT_FOUND,
       };
     } catch (error) {
@@ -331,7 +331,7 @@ export class UserController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            "Erreur lors de la suppression de l'utilisateur.";
+            'Error when deleting user.';
 
       return {
         message: errorMessage,

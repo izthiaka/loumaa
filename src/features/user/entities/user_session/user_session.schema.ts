@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
-import { User } from './user.schema';
+import { User } from '../user/user.schema';
 
 @Schema({ timestamps: true })
 export class UserSession extends Document {

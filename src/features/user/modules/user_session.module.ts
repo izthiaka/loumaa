@@ -3,7 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import {
   UserSession,
   UserSessionSchema,
-} from '../entities/user_session.schema';
+} from '../entities/user_session/user_session.schema';
 import { UserSessionService } from '../services/user_session/user_session.service';
 
 @Module({

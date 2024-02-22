@@ -7,91 +7,91 @@ import {
   IsIn,
 } from 'class-validator';
 import UserStatusAccount from 'src/core/constant/user_status_account';
-import { User } from '../entities/user.schema';
+import { User } from '../entities/user/user.schema';
 import { RoleSpecificFieldDto } from './role.dto';
 
 export class CreateUserDto {
   @IsString({
-    message: "L'input [nom] doit être une chaîne de caractères.",
+    message: 'Input [name] must be a character string.',
   })
-  @IsNotEmpty({ message: "L'input [nom] est requis." })
+  @IsNotEmpty({ message: 'Input [name] is required.' })
   readonly name: string;
 
   @IsOptional()
-  @IsString({ message: "L'input [genre] doit être une chaîne de caractères." })
+  @IsString({ message: 'The [genre] input must be a character string.' })
   readonly gender?: string;
 
   @IsOptional()
   @IsEmail(
     {},
-    { message: "L'adresse e-mail doit être une adresse e-mail valide." },
+    { message: 'The e-mail address must be a valid e-mail address.' },
   )
   readonly email?: string;
 
-  @IsNotEmpty({ message: "L'input [phone] est requis." })
+  @IsNotEmpty({ message: 'Input [phone] is required.' })
   @IsPhoneNumber(undefined, {
-    message: "L'input [phone] doit être un numéro de téléphone valide.",
+    message: 'The [phone] input must be a valid phone number.',
   })
   readonly phone: string;
 
   @IsOptional()
-  @IsString({ message: "L'input [statut] doit être une chaîne de caractères." })
+  @IsString({ message: 'The [status] input must be a character string.' })
   @IsIn(UserStatusAccount.validation, {
-    message: `Les status valides:. [${UserStatusAccount.validation}]`,
+    message: `Valid status:. [${UserStatusAccount.validation}]`,
   })
   readonly status?: string;
 
-  @IsString({ message: "L'input [role] doit être une chaîne de caractères." })
-  @IsNotEmpty({ message: "L'input [role] est requis." })
+  @IsString({ message: 'Input [role] must be a character string.' })
+  @IsNotEmpty({ message: 'Input [role] is required.' })
   readonly role: string;
 }
 
 export class PictureUploadDto {
   @IsOptional()
-  @IsString({ message: "L'input [photo] doit être une image." })
+  @IsString({ message: 'The [photo] input must be an image.' })
   readonly photo: string;
 }
 
 export class UpdateStatusUserDto {
   @IsOptional()
-  @IsString({ message: "L'input [statut] doit être une chaîne de caractères." })
-  @IsIn(UserStatusAccount.validation, { message: 'Statut invalide.' })
+  @IsString({ message: 'The [status] input must be a character string.' })
+  @IsIn(UserStatusAccount.validation, { message: 'Invalid status.' })
   readonly status?: string;
 }
 
 export class UpdateUserDto {
   @IsString({
-    message: "L'input [nom] doit être une chaîne de caractères.",
+    message: 'Input [name] must be a character string.',
   })
-  @IsNotEmpty({ message: "L'input [nom] est requis." })
+  @IsNotEmpty({ message: 'Input [name] is required.' })
   readonly name: string;
 
   @IsOptional()
-  @IsString({ message: "L'input [genre] doit être une chaîne de caractères." })
+  @IsString({ message: 'The [genre] input must be a character string.' })
   readonly gender?: string;
 
   @IsOptional()
   @IsEmail(
     {},
-    { message: "L'adresse e-mail doit être une adresse e-mail valide." },
+    { message: 'The e-mail address must be a valid e-mail address.' },
   )
   readonly email?: string;
 
-  @IsNotEmpty({ message: "L'input [phone] est requis." })
+  @IsNotEmpty({ message: 'Input [phone] is required.' })
   @IsPhoneNumber(undefined, {
-    message: "L'input [phone] doit être un numéro de téléphone valide.",
+    message: 'The [phone] input must be a valid phone number.',
   })
   readonly phone: string;
 
   @IsOptional()
-  @IsString({ message: "L'input [statut] doit être une chaîne de caractères." })
+  @IsString({ message: 'The [status] input must be a character string.' })
   @IsIn(UserStatusAccount.validation, {
     message: `Les status valides:. [${UserStatusAccount.validation}]`,
   })
   readonly status?: string;
 
-  @IsString({ message: "L'input [role] doit être une chaîne de caractères." })
-  @IsNotEmpty({ message: "L'input [role] est requis." })
+  @IsString({ message: 'Input [role] must be a character string.' })
+  @IsNotEmpty({ message: 'Input [role] is required.' })
   readonly role: string;
 }
 

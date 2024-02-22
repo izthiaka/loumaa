@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ExecutionContext } from '@nestjs/common';
 import { AuthGuard } from './auth.guard';
 import { JwtService } from '@nestjs/jwt';
-import { UserService } from 'src/features/user/services/user.service';
+import { UserService } from 'src/features/user/services/user/user.service';
 
 describe('AuthGuard', () => {
   let guard: AuthGuard;

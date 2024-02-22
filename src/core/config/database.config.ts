@@ -3,6 +3,5 @@ export default () => ({
   options: {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-    // Autres options MongoDB
   },
 });

@@ -1,7 +1,7 @@
 import { Request } from 'express';
 import { unlink } from 'node:fs/promises';
 
-export default class UrlFileUtil {
+export class UrlFileUtil {
   static getUrlFileIsExist(req: any, pathImage: string) {
     try {
       const { filename } = req.file;

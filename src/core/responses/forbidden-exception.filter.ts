@@ -15,7 +15,7 @@ export class ForbiddenExceptionFilter implements ExceptionFilter {
 
     if (status === HttpStatus.FORBIDDEN) {
       response.status(status).json({
-        message: 'Accés non autorisé',
+        message: 'Unauthorized access',
         status: status,
         error: 'Forbidden',
       });

@@ -13,7 +13,9 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
-  ProdilSpecificFieldDto,
+  CheckIdentifierDto,
+  CheckOTPDto,
+  ProfileSpecificFieldDto,
   SignInDto,
   SignUpDto,
   TokenDto,
@@ -96,15 +98,15 @@ export class AuthController {
   @Get('me')
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
-  async profil(@Req() request: Request & { matricule: string }): Promise<{
+  async profile(@Req() request: Request & { matricule: string }): Promise<{
     message: string;
     status: number;
-    data?: ProdilSpecificFieldDto;
+    data?: ProfileSpecificFieldDto;
   }> {
     try {
       const req = request.matricule;
       const profil = await this.authService.profil(req);
-      const result = new ProdilSpecificFieldDto(profil);
+      const result = new ProfileSpecificFieldDto(profil);
       return {
         message: 'Récupération Profil connecté réussie.',
         status: HttpStatus.CREATED,
@@ -207,6 +209,12 @@ export class AuthController {
     }
   }
 
+  @Put('me/update_profile')
+  @HttpCode(HttpStatus.OK)
+  updateProfile() {
+    return this.authService.resetPassword();
+  }
+
   @Delete('me/delete_account')
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
@@ -248,7 +256,6 @@ export class AuthController {
   ): Promise<{ message: string; status: number; data?: boolean }> {
     try {
       const req = request.matricule;
-      await this.checkToken(req);
       const result = await this.authService.logOut(req);
       return {
         message: 'Déconnexion réussie.',
@@ -269,21 +276,47 @@ export class AuthController {
     }
   }
 
-  async checkToken(payload: object) {
-    console.log('check token' + payload);
-    return 'data return';
-  }
-
   @Post('signin/forget_password')
   @HttpCode(HttpStatus.OK)
-  forgetPassword() {
-    return this.authService.forgetPassword();
+  async forgetPassword(@Body() checkIdentifierDto: CheckIdentifierDto) {
+    try {
+      const result = await this.authService.forgetPassword(checkIdentifierDto);
+      return {
+        message: 'Envoi code OTP réussie.',
+        status: HttpStatus.OK,
+        data: result,
+      };
+    } catch (error) {
+      const errorMessage =
+        error instanceof ConflictException
+          ? (error.getResponse() as { message: string }).message
+          : error.message.replace(/^ConflictException: /, '') ||
+            'Erreur lors de la vérification.';
+
+      return {
+        message: errorMessage,
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+      };
+    }
   }
 
   @Post('signin/check_code')
   @HttpCode(HttpStatus.OK)
-  checkOTP() {
-    return this.authService.checkOTP();
+  checkOTP(@Body() checkOTPDto: CheckOTPDto) {
+    try {
+      return this.authService.checkOTP(checkOTPDto);
+    } catch (error) {
+      const errorMessage =
+        error instanceof ConflictException
+          ? (error.getResponse() as { message: string }).message
+          : error.message.replace(/^ConflictException: /, '') ||
+            'Erreur lors de la vérification.';
+
+      return {
+        message: errorMessage,
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+      };
+    }
   }
 
   @Post('signin/reset_password')

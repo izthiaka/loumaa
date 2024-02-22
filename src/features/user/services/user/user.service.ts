@@ -4,15 +4,15 @@ import {
   ConflictException,
   NotFoundException,
 } from '@nestjs/common';
-import { User } from '../entities/user.schema';
+import { User } from '../../entities/user/user.schema';
 import { InjectModel } from '@nestjs/mongoose';
-import MatriculeGenerate from 'src/core/utils/matricule_generate';
+import { MatriculeGenerate } from 'src/core/utils/matricule_generate/matricule_generate.util';
 import {
   CreateUserDto,
   PictureUploadDto,
   UpdateStatusUserDto,
   UpdateUserDto,
-} from '../dtos/user.dto';
+} from '../../dtos/user.dto';
 import UserStatusAccount from 'src/core/constant/user_status_account';
 import BcryptImplement from 'src/core/config/bcrypt';
 
@@ -33,7 +33,7 @@ export class UserService {
 
         if (existingUser) {
           throw new ConflictException(
-            `L'utilisateur avec l'email [${createUserDto.email}] existe déjà.`,
+            `The user with the email [${createUserDto.email}] already exists.`,
           );
         }
       }
@@ -45,7 +45,7 @@ export class UserService {
 
         if (existingUser) {
           throw new ConflictException(
-            `L'utilisateur avec le numéro de téléphone [${createUserDto.phone}] existe déjà.`,
+            `The user with the phone number [${createUserDto.phone}] already exists.`,
           );
         }
       }
@@ -183,7 +183,7 @@ export class UserService {
     }
   }
 
-  async findUserProfil(matricule: string): Promise<User | null> {
+  async findUserProfile(matricule: string): Promise<User | null> {
     try {
       const user = await this.userModel
         .aggregate([
@@ -292,9 +292,7 @@ export class UserService {
       const existingUser = await this.userModel.findById(id).exec();
 
       if (!existingUser) {
-        throw new NotFoundException(
-          `Utilisateur avec l'ID [${id}] non trouvé.`,
-        );
+        throw new NotFoundException(`User with ID [${id}] not found.`);
       }
 
       if (updateUserDto.email) {
@@ -304,7 +302,7 @@ export class UserService {
             .exec();
           if (userWithSameEmail) {
             throw new ConflictException(
-              `L'e-mail [${updateUserDto.email}] est déjà utilisé par un autre utilisateur.`,
+              `The e-mail [${updateUserDto.email}] is already being used by another user.`,
             );
           }
         }
@@ -316,7 +314,7 @@ export class UserService {
           .exec();
         if (userWithSamePhone) {
           throw new ConflictException(
-            `Le numéro de téléphone [${updateUserDto.phone}] est déjà utilisé par un autre utilisateur.`,
+            `The phone number [${updateUserDto.phone}] is already in use by another user.`,
           );
         }
       }
@@ -339,9 +337,7 @@ export class UserService {
       const existingUser = await this.userModel.findById(id).exec();
 
       if (!existingUser) {
-        throw new NotFoundException(
-          `Utilisateur avec l'ID [${id}] non trouvé.`,
-        );
+        throw new NotFoundException(`User with ID [${id}] not found.`);
       }
 
       const updatedUser = await this.userModel
@@ -362,13 +358,36 @@ export class UserService {
       const existingUser = await this.userModel.findById(id).exec();
 
       if (!existingUser) {
-        throw new NotFoundException(
-          `Utilisateur avec l'ID [${id}] non trouvé.`,
-        );
+        throw new NotFoundException(`User with ID [${id}] not found.`);
       }
 
       const updatedUser = await this.userModel
         .findByIdAndUpdate(id, updateUserStatusDto, { new: true })
+        .exec();
+
+      return updatedUser;
+    } catch (error) {
+      throw Error(error);
+    }
+  }
+
+  async updateIdentifierToken(
+    id: string,
+    identifierToken: string,
+  ): Promise<User | null> {
+    try {
+      const existingUser = await this.userModel.findById(id).exec();
+
+      if (!existingUser) {
+        throw new NotFoundException(`User with ID [${id}] not found.`);
+      }
+
+      const updatedUser = await this.userModel
+        .findByIdAndUpdate(
+          id,
+          { identifier_token: identifierToken },
+          { new: true },
+        )
         .exec();
 
       return updatedUser;
@@ -385,9 +404,7 @@ export class UserService {
       const existingUser = await this.userModel.findById(id).exec();
 
       if (!existingUser) {
-        throw new NotFoundException(
-          `Utilisateur avec l'ID [${id}] non trouvé.`,
-        );
+        throw new NotFoundException(`User with ID [${id}] not found.`);
       }
 
       const updatedUser = await this.userModel

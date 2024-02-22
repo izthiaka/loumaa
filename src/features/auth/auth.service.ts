@@ -1,16 +1,24 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
-import { SignInDto, SignUpDto, UpdatePasswordDto } from './dto/auth.dto';
-import { UserService } from '../user/services/user.service';
-import { RoleService } from '../user/services/role.service';
-import MatriculeGenerate from 'src/core/utils/matricule_generate';
+import {
+  CheckIdentifierDto,
+  CheckOTPDto,
+  SignInDto,
+  SignUpDto,
+  UpdatePasswordDto,
+} from './dto/auth.dto';
+import { UserService } from '../user/services/user/user.service';
+import { RoleService } from '../user/services/role/role.service';
+import { MatriculeGenerate } from 'src/core/utils/matricule_generate/matricule_generate.util';
 import BcryptImplement from 'src/core/config/bcrypt';
 import { InjectModel } from '@nestjs/mongoose';
-import { User } from '../user/entities/user.schema';
+import { User } from '../user/entities/user/user.schema';
 import UserStatusAccount from 'src/core/constant/user_status_account';
 import { isEmail, isPhoneNumber } from 'class-validator';
 import { JwtService } from '@nestjs/jwt';
 import { UserSessionService } from '../user/services/user_session/user_session.service';
+import { RandomCodeUtil } from 'src/core/utils/random-code/random-code.util';
+import { MailService } from 'src/services/mail/mail.service';
 
 @Injectable()
 export class AuthService {
@@ -23,13 +31,15 @@ export class AuthService {
     private readonly matricule: MatriculeGenerate,
     private readonly bcrypt: BcryptImplement,
     private readonly jwtService: JwtService,
+    private readonly randomCodeUtil: RandomCodeUtil,
+    private mailService: MailService,
   ) {}
 
   async signIn(signInDto: SignInDto) {
     try {
-      this.identifier(signInDto.identifiant);
+      this.identifier(signInDto.identifier);
       const user = await this.userService.findByUsernameOrEmailOrPhone(
-        signInDto.identifiant,
+        signInDto.identifier,
       );
       if (user) {
         this.validatePassword(signInDto.password, user.password);
@@ -80,7 +90,7 @@ export class AuthService {
   async refreshToken(auth: any) {
     try {
       const { username } = auth;
-      const user = await this.userService.findUserProfil(username);
+      const user = await this.userService.findUserProfile(username);
       if (user) {
         const result = await this.generateToken(user);
         return result;
@@ -96,7 +106,7 @@ export class AuthService {
   async profil(auth: any) {
     try {
       const { username } = auth;
-      const user = await this.userService.findUserProfil(username);
+      const user = await this.userService.findUserProfile(username);
       return user;
     } catch (error) {
       throw Error(error);
@@ -181,7 +191,7 @@ export class AuthService {
   async logOut(auth: any) {
     try {
       const { username } = auth;
-      const user = await this.userService.findUserProfil(username);
+      const user = await this.userService.findUserProfile(username);
       await this.userSessionService.deleteSession(user._id);
       return true;
     } catch (error) {
@@ -218,12 +228,64 @@ export class AuthService {
     }
   }
 
-  forgetPassword() {
-    return 'data return';
+  async forgetPassword(
+    checkIdentifierDto: CheckIdentifierDto,
+  ): Promise<boolean> {
+    try {
+      this.identifier(checkIdentifierDto.identifier);
+      const user = await this.userService.findByUsernameOrEmailOrPhone(
+        checkIdentifierDto.identifier,
+      );
+      if (user) {
+        const code = this.randomCodeUtil.generateCode(6);
+        await this.userService.updateIdentifierToken(user._id, code);
+
+        // Send code to email or phone number
+        await this.mailService.sendUserConfirmation(
+          user,
+          'token',
+          'confirmation',
+        );
+        return true;
+      }
+      throw new Error('Identifiant introuvable.');
+    } catch (error) {
+      throw Error(error);
+    }
   }
 
-  checkOTP() {
-    return 'data return';
+  async sendResetPasswordLink(checkIdentifierDto: CheckIdentifierDto) {
+    this.identifier(checkIdentifierDto.identifier);
+    const user = await this.userService.findByUsernameOrEmailOrPhone(
+      checkIdentifierDto.identifier,
+    );
+    if (user) {
+      // Send email to user with reset password link
+      /*const token = this.jwtService.sign({ id: user.id });
+      const url = `${process.env.FRONT_END_URL}/auth/reset_password/${token}`;
+
+      await this.sendResetPasswordMail(user.email, user.matricule, url);*/
+      await this.mailService.sendUserConfirmation(
+        user,
+        'token',
+        'confirmation',
+      );
+      return true;
+    }
+    throw new Error('Identifiant introuvable.');
+  }
+
+  checkOTP(checkOTPDto: CheckOTPDto) {
+    try {
+      // const code = this.otp.validateOtp(
+      //   checkOTPDto.code,
+      //   'JY4U4NTTGU3ESTTOHM7S6VSPLJ5V2NTRKQ5GQ2CTIY7GELBYKAYA',
+      // );
+      console.log('checkOTPDto : ', checkOTPDto);
+      return true;
+    } catch (error) {
+      throw Error(error);
+    }
   }
 
   resetPassword() {
