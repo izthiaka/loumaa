@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { MatriculeGenerate } from 'src/core/utils/matricule_generate/matricule_generate.util';
-import BcryptImplement from 'src/core/config/bcrypt';
+import BcryptImplement from 'src/core/config/bcrypt-config';
 import { RoleService } from '../user/services/role/role.service';
 import { UserService } from '../user/services/user/user.service';
 import { RoleModule } from '../user/modules/role.module';

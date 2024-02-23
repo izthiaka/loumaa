@@ -14,7 +14,7 @@ import {
   UpdateUserDto,
 } from '../../dtos/user.dto';
 import UserStatusAccount from 'src/core/constant/user_status_account';
-import BcryptImplement from 'src/core/config/bcrypt';
+import BcryptImplement from 'src/core/config/bcrypt-config';
 
 @Injectable()
 export class UserService {

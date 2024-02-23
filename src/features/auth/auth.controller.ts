@@ -43,7 +43,7 @@ export class AuthController {
       );
 
       return {
-        message: 'Authentification réussie.',
+        message: 'Authentication successful.',
         status: HttpStatus.OK,
         data: result,
       };
@@ -52,7 +52,7 @@ export class AuthController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            'Erreur lors de la connexion.';
+            'Connection error.';
 
       return {
         message: errorMessage,
@@ -70,14 +70,14 @@ export class AuthController {
       const { password, password_confirm } = signUpDto;
       if (password !== password_confirm) {
         return {
-          message: 'Les mots de passe ne concordent pas.',
+          message: 'The passwords do not match.',
           status: HttpStatus.BAD_REQUEST,
         };
       }
 
       const result = await this.authService.signUp(signUpDto);
       return {
-        message: 'Inscription réussie.',
+        message: 'Successful registration.',
         status: HttpStatus.CREATED,
         data: result,
       };
@@ -86,7 +86,7 @@ export class AuthController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            "Erreur lors de l'inscription.";
+            'Registration error.';
 
       return {
         message: errorMessage,
@@ -105,10 +105,10 @@ export class AuthController {
   }> {
     try {
       const req = request.matricule;
-      const profil = await this.authService.profil(req);
-      const result = new ProfileSpecificFieldDto(profil);
+      const profile = await this.authService.profile(req);
+      const result = new ProfileSpecificFieldDto(profile);
       return {
-        message: 'Récupération Profil connecté réussie.',
+        message: 'Profile recovery successful.',
         status: HttpStatus.CREATED,
         data: result,
       };
@@ -117,7 +117,7 @@ export class AuthController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            'Erreur lors de la récupération du profil.';
+            'Error when retrieving profile.';
 
       return {
         message: errorMessage,
@@ -143,7 +143,7 @@ export class AuthController {
         tokenRefresh.refreshExpireAt,
       );
       return {
-        message: 'Token rafraichi avec succès.',
+        message: 'Token successfully refreshed.',
         status: HttpStatus.OK,
         data: result,
       };
@@ -152,7 +152,7 @@ export class AuthController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            'Erreur lors de la mise à jour du token.';
+            'Error updating token.';
 
       return {
         message: errorMessage,
@@ -170,29 +170,29 @@ export class AuthController {
   ) {
     try {
       const req = request.matricule;
-      const profil = await this.authService.profil(req);
+      const profile = await this.authService.profile(req);
 
-      if (profil) {
+      if (profile) {
         const { password, password_confirm } = updatePasswordDto;
         if (password !== password_confirm) {
           return {
-            message: 'Les mots de passe ne concordent pas.',
+            message: 'The passwords do not match.',
             status: HttpStatus.BAD_REQUEST,
           };
         }
 
         const result = await this.authService.updatePassword(
-          profil,
+          profile,
           updatePasswordDto,
         );
         return {
-          message: 'Mise à jour mot de passe réussie.',
+          message: 'Password update successful.',
           status: HttpStatus.OK,
           data: result,
         };
       }
       return {
-        message: 'Profil utilisateur introuvable.',
+        message: 'User profile not found.',
         status: HttpStatus.NOT_FOUND,
       };
     } catch (error) {
@@ -200,7 +200,7 @@ export class AuthController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            'Erreur lors de la mise à jour du mot de passe.';
+            'Error updating password.';
 
       return {
         message: errorMessage,
@@ -221,17 +221,17 @@ export class AuthController {
   async deleteAccount(@Req() request: Request & { matricule: string }) {
     try {
       const req = request.matricule;
-      const profil = await this.authService.profil(req);
-      if (profil) {
-        const result = await this.authService.deleteAccount(profil);
+      const profile = await this.authService.profile(req);
+      if (profile) {
+        const result = await this.authService.deleteAccount(profile);
         return {
-          message: 'Suppression de compte réussie.',
+          message: 'Successful account deletion.',
           status: HttpStatus.OK,
           data: result,
         };
       }
       return {
-        message: 'Profil utilisateur introuvable.',
+        message: 'User profile not found.',
         status: HttpStatus.NOT_FOUND,
       };
     } catch (error) {
@@ -239,7 +239,7 @@ export class AuthController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            'Erreur lors de la suppression de compte.';
+            'Account deletion error.';
 
       return {
         message: errorMessage,
@@ -258,7 +258,7 @@ export class AuthController {
       const req = request.matricule;
       const result = await this.authService.logOut(req);
       return {
-        message: 'Déconnexion réussie.',
+        message: 'Successful logout.',
         status: HttpStatus.OK,
         data: result,
       };
@@ -267,7 +267,7 @@ export class AuthController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            'Erreur lors de la déconnexion.';
+            'Error during disconnection.';
 
       return {
         message: errorMessage,
@@ -282,7 +282,7 @@ export class AuthController {
     try {
       const result = await this.authService.forgetPassword(checkIdentifierDto);
       return {
-        message: 'Envoi code OTP réussie.',
+        message: 'OTP code sent successfully.',
         status: HttpStatus.OK,
         data: result,
       };
@@ -291,7 +291,7 @@ export class AuthController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            'Erreur lors de la vérification.';
+            'Error during verification.';
 
       return {
         message: errorMessage,

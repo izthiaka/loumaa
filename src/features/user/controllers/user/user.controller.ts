@@ -24,7 +24,7 @@ import {
 } from '../../dtos/user.dto';
 import { RoleService } from '../../services/role/role.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { multerConfig } from 'src/core/config/multer.config';
+import { multerConfig } from 'src/core/config/multer-config';
 import { Request } from 'express';
 
 const staticUrlImage = 'images';

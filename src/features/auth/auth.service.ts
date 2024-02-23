@@ -10,7 +10,7 @@ import {
 import { UserService } from '../user/services/user/user.service';
 import { RoleService } from '../user/services/role/role.service';
 import { MatriculeGenerate } from 'src/core/utils/matricule_generate/matricule_generate.util';
-import BcryptImplement from 'src/core/config/bcrypt';
+import BcryptImplement from 'src/core/config/bcrypt-config';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from '../user/entities/user/user.schema';
 import UserStatusAccount from 'src/core/constant/user_status_account';
@@ -48,7 +48,7 @@ export class AuthService {
         const result = await this.generateToken(user);
         return result;
       }
-      throw new Error('Identifiant introuvable.');
+      throw new Error('Identifier not found.');
     } catch (error) {
       throw Error(error);
     }
@@ -59,18 +59,18 @@ export class AuthService {
     if (phone) {
       const existingUserPhone = await this.userService.findUserByPhone(phone);
       if (existingUserPhone) {
-        throw new Error(`Le numéro de téléphone [${phone}] existe déjà.`);
+        throw new Error(`The phone number [${phone}] already exists.`);
       }
     }
 
     const existingUserEmail = await this.userService.findUserByEmail(email);
     if (existingUserEmail) {
-      throw new Error('Cet e-mail est déja utilisé.');
+      throw new Error('This e-mail is already in use.');
     }
 
     const passwordHash = this.bcrypt.hash(password);
 
-    const role = await this.roleService.findRoleByName('Propriétaire');
+    const role = await this.roleService.findRoleByName('Owner');
 
     const user = new this.userModel(signUpDto);
     user.matricule = this.matricule.generate();
@@ -95,15 +95,13 @@ export class AuthService {
         const result = await this.generateToken(user);
         return result;
       }
-      throw new ConflictException(
-        'Utilisateur introuvable. Veuillez-vous connecter.',
-      );
+      throw new ConflictException('User not found. Please login.');
     } catch (error) {
       throw Error(error);
     }
   }
 
-  async profil(auth: any) {
+  async profile(auth: any) {
     try {
       const { username } = auth;
       const user = await this.userService.findUserProfile(username);
@@ -114,16 +112,16 @@ export class AuthService {
   }
 
   private identifier(identifier: string) {
-    const isIdentifiantEmail: boolean = isEmail(identifier);
-    const isIdentifiantPhone: boolean = isPhoneNumber(identifier);
+    const isIdentifierEmail: boolean = isEmail(identifier);
+    const isIdentifierPhone: boolean = isPhoneNumber(identifier);
 
     let type = null;
-    isIdentifiantEmail ? (type = 'email') : type;
-    isIdentifiantPhone ? (type = 'phone') : type;
+    isIdentifierEmail ? (type = 'email') : type;
+    isIdentifierPhone ? (type = 'phone') : type;
 
-    if (!isIdentifiantEmail && !isIdentifiantPhone)
+    if (!isIdentifierEmail && !isIdentifierPhone)
       throw new Error(
-        "L'input [identifiant] doit être un email ou un numéro de téléphone.",
+        'The input [identifier] must be an email or a phone number.',
       );
 
     return type;
@@ -132,9 +130,7 @@ export class AuthService {
   private validatePassword(inputPassword: string, userPassword: string) {
     const passwordIsValid = this.bcrypt.compare(inputPassword, userPassword);
     if (!passwordIsValid)
-      throw new Error(
-        'Identifiant et ou Mot de passe incorrect. Veuillez réessayer.',
-      );
+      throw new Error('Incorrect login and/or password. Please try again.');
   }
 
   private calculateExpiresIn(hours: number) {
@@ -144,17 +140,13 @@ export class AuthService {
 
   private checkAccountStatus(status: string) {
     if (status === UserStatusAccount.getPendingStatusLibelle())
-      throw new Error(
-        'Votre compte est en attente de validation. Veuillez patienter.',
-      );
+      throw new Error('Your account is awaiting validation. Please wait.');
 
     if (
-      status === UserStatusAccount.getDesactivatedStatusLibelle() ||
+      status === UserStatusAccount.getDeActivatedStatusLibelle() ||
       status === UserStatusAccount.getBannedStatusLibelle()
     )
-      throw new Error(
-        "Compte inactif, veuillez-vous rapprocher de l'administrateur.",
-      );
+      throw new Error('Inactive account, please contact the administrator.');
   }
 
   async generateAccessToken(user: User): Promise<string> {
@@ -205,7 +197,7 @@ export class AuthService {
         updatePasswordDto.old_password,
         user.password,
       );
-      if (!passwordIsValid) throw new Error('Ancien Mot de passe incorrect.');
+      if (!passwordIsValid) throw new Error('Old password incorrect.');
 
       const hashedPassword = this.bcrypt.hash(updatePasswordDto.password);
       await this.userService.updatePassword(user._id, hashedPassword);
@@ -248,7 +240,7 @@ export class AuthService {
         );
         return true;
       }
-      throw new Error('Identifiant introuvable.');
+      throw new Error('Login not found.');
     } catch (error) {
       throw Error(error);
     }
@@ -272,7 +264,7 @@ export class AuthService {
       );
       return true;
     }
-    throw new Error('Identifiant introuvable.');
+    throw new Error('Login not found.');
   }
 
   checkOTP(checkOTPDto: CheckOTPDto) {

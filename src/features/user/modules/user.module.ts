@@ -6,7 +6,7 @@ import { UserService } from '../services/user/user.service';
 import { MatriculeGenerate } from 'src/core/utils/matricule_generate/matricule_generate.util';
 import { RoleService } from '../services/role/role.service';
 import { RoleModule } from './role.module';
-import BcryptImplement from 'src/core/config/bcrypt';
+import BcryptImplement from 'src/core/config/bcrypt-config';
 
 @Module({
   imports: [
