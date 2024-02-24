@@ -9,40 +9,36 @@ import {
 import UserStatusAccount from 'src/core/constant/user_status_account';
 import { User } from '../entities/user/user.schema';
 import { RoleSpecificFieldDto } from './role.dto';
+import { i18nValidationMessage } from 'nestjs-i18n';
 
 export class CreateUserDto {
-  @IsString({
-    message: 'Input [name] must be a character string.',
-  })
-  @IsNotEmpty({ message: 'Input [name] is required.' })
+  @IsString({ message: 'validation.NOT_STRING' })
+  @IsNotEmpty({ message: 'validation.NOT_EMPTY' })
   readonly name: string;
 
   @IsOptional()
-  @IsString({ message: 'The [genre] input must be a character string.' })
+  @IsString({ message: 'validation.NOT_STRING' })
   readonly gender?: string;
 
   @IsOptional()
-  @IsEmail(
-    {},
-    { message: 'The e-mail address must be a valid e-mail address.' },
-  )
+  @IsEmail({}, { message: 'validation.INVALID_EMAIL' })
   readonly email?: string;
 
-  @IsNotEmpty({ message: 'Input [phone] is required.' })
-  @IsPhoneNumber(undefined, {
-    message: 'The [phone] input must be a valid phone number.',
-  })
+  @IsNotEmpty({ message: 'validation.NOT_EMPTY' })
+  @IsPhoneNumber(undefined, { message: 'validation.INVALID_PHONE_NUMBER' })
   readonly phone: string;
 
   @IsOptional()
-  @IsString({ message: 'The [status] input must be a character string.' })
+  @IsString({ message: 'validation.NOT_STRING' })
   @IsIn(UserStatusAccount.validation, {
-    message: `Valid status:. [${UserStatusAccount.validation}]`,
+    message: i18nValidationMessage('validation.IN_VALID', {
+      message: `[${UserStatusAccount.validation}]`,
+    }),
   })
   readonly status?: string;
 
-  @IsString({ message: 'Input [role] must be a character string.' })
-  @IsNotEmpty({ message: 'Input [role] is required.' })
+  @IsString({ message: 'validation.NOT_STRING' })
+  @IsNotEmpty({ message: 'validation.NOT_EMPTY' })
   readonly role: string;
 }
 
@@ -54,44 +50,45 @@ export class PictureUploadDto {
 
 export class UpdateStatusUserDto {
   @IsOptional()
-  @IsString({ message: 'The [status] input must be a character string.' })
-  @IsIn(UserStatusAccount.validation, { message: 'Invalid status.' })
+  @IsString({ message: 'validation.NOT_STRING' })
+  @IsIn(UserStatusAccount.validation, {
+    message: i18nValidationMessage('validation.IN_VALID', {
+      message: `[${UserStatusAccount.validation}]`,
+    }),
+  })
   readonly status?: string;
 }
 
 export class UpdateUserDto {
   @IsString({
-    message: 'Input [name] must be a character string.',
+    message: 'validation.NOT_STRING',
   })
-  @IsNotEmpty({ message: 'Input [name] is required.' })
+  @IsNotEmpty({ message: 'validation.NOT_EMPTY' })
   readonly name: string;
 
   @IsOptional()
-  @IsString({ message: 'The [genre] input must be a character string.' })
+  @IsString({ message: 'validation.NOT_STRING' })
   readonly gender?: string;
 
   @IsOptional()
-  @IsEmail(
-    {},
-    { message: 'The e-mail address must be a valid e-mail address.' },
-  )
+  @IsEmail({}, { message: 'validation.INVALID_EMAIL' })
   readonly email?: string;
 
-  @IsNotEmpty({ message: 'Input [phone] is required.' })
-  @IsPhoneNumber(undefined, {
-    message: 'The [phone] input must be a valid phone number.',
-  })
+  @IsNotEmpty({ message: 'validation.NOT_EMPTY' })
+  @IsPhoneNumber(undefined, { message: 'validation.INVALID_PHONE_NUMBER' })
   readonly phone: string;
 
   @IsOptional()
-  @IsString({ message: 'The [status] input must be a character string.' })
+  @IsString({ message: 'validation.NOT_STRING' })
   @IsIn(UserStatusAccount.validation, {
-    message: `Les status valides:. [${UserStatusAccount.validation}]`,
+    message: i18nValidationMessage('validation.IN_VALID', {
+      message: `[${UserStatusAccount.validation}]`,
+    }),
   })
   readonly status?: string;
 
-  @IsString({ message: 'Input [role] must be a character string.' })
-  @IsNotEmpty({ message: 'Input [role] is required.' })
+  @IsString({ message: 'validation.NOT_STRING' })
+  @IsNotEmpty({ message: 'validation.NOT_EMPTY' })
   readonly role: string;
 }
 

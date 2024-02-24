@@ -1,0 +1,9 @@
+{
+  "NOT_EMPTY": "{property} is required",
+  "NOT_STRING": "{property} must be a string",
+  "NOT_IN": "{property} must be one of {message}",
+  "IN_VALID": "Valid {property}: {message}",
+  "INVALID_EMAIL": "email is invalid",
+  "INVALID_PHONE_NUMBER": "phone number is invalid",
+  "INVALID_BOOLEAN": "{property} must be a boolean."
+}

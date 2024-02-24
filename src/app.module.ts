@@ -11,9 +11,31 @@ import { RoleModule } from './features/user/modules/role.module';
 import { AuthModule } from './features/auth/auth.module';
 import { validationSchema } from './core/config/env/validation';
 import { configEnv } from './core/config/env/configEnv';
+import {
+  AcceptLanguageResolver,
+  I18nModule,
+  QueryResolver,
+  HeaderResolver,
+} from 'nestjs-i18n';
 
 @Module({
   imports: [
+    I18nModule.forRoot({
+      fallbackLanguage: 'en',
+      fallbacks: {
+        'en-*': 'en',
+        'fr-*': 'fr',
+      },
+      loaderOptions: {
+        path: join(__dirname, '..', '/lang/'),
+        watch: true,
+      },
+      resolvers: [
+        { use: QueryResolver, options: ['lang'] },
+        AcceptLanguageResolver,
+        new HeaderResolver(['x-lang']),
+      ],
+    }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..'),
     }),

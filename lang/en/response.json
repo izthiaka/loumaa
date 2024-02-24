@@ -1,0 +1,32 @@
+{
+  "SUCCESS_LIST": "{model} list successfully retrieved.",
+  "ERROR_LISTING": "Error when retrieving {model}s.",
+
+  "SUCCESS_RETRIEVED": "Detail of a successfully recovered {model}.",
+  "ERROR_RETRIEVED": "Error when retrieving a {model}.",
+
+  "SUCCESS_SEARCH": "Search {model} successfully recovered.",
+  "ERROR_SEARCH": "Error when searching for a {model}.",
+
+  "SUCCESS_UPDATE": "Modification of a successfully recovered {model}.",
+  "ERROR_UPDATED": "Error when updating a {model}.",
+
+  "SUCCESS_CREATE": "{model} successfully created.",
+  "ERROR_CREATED": "Error when creating a {model}.",
+
+  "SUCCESS_DELETED": "Successfully deleted {model}.",
+  "ERROR_DELETED": "Error when deleting the {model}.",
+
+  "ALREADY_EXIST": "The {attribute} {model} already exists.",
+  "NOT_EXIST": "The {model} {attribute} does not exist.",
+  "NOT_FOUND": "{model} not found",
+
+  "SUCCESS_FILE": "File successfully uploaded.",
+  "ERROR_FILE": "Error when uploading the file.",
+  "ERROR_FILE_TYPE": "Invalid file type.",
+  "INVALID_FILE": "File is invalid.",
+  "FILE_REQUIRED": "NO File.",
+
+  "failed": "password",
+  "error": "$t(validation.{property}) cannot be empty"
+}

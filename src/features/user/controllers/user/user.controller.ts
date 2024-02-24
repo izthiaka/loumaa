@@ -26,6 +26,7 @@ import { RoleService } from '../../services/role/role.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from 'src/core/config/multer-config';
 import { Request } from 'express';
+import { I18n, I18nContext } from 'nestjs-i18n';
 
 const staticUrlImage = 'images';
 
@@ -39,13 +40,16 @@ export class UserController {
   @Post('store')
   @HttpCode(HttpStatus.CREATED)
   async createUser(
+    @I18n() i18n: I18nContext,
     @Body() createUserDto: CreateUserDto,
   ): Promise<{ message: string; status: number; data?: User }> {
     try {
       const role = await this.roleService.findRoleByCode(createUserDto.role);
       if (!role) {
         return {
-          message: `The role [${createUserDto.role}] does not exist.`,
+          message: i18n.t('response.NOT_EXIST', {
+            args: { model: 'Role', attribute: `${createUserDto.role}` },
+          }),
           status: HttpStatus.CONFLICT,
         };
       }
@@ -57,7 +61,9 @@ export class UserController {
 
       const createdUser: User = await this.userService.createUser(body);
       return {
-        message: 'User successfully created.',
+        message: i18n.t('response.SUCCESS_CREATE', {
+          args: { model: 'User' },
+        }),
         status: HttpStatus.CREATED,
         data: createdUser,
       };
@@ -66,7 +72,9 @@ export class UserController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            'Error adding a user.';
+            i18n.t('response.ERROR_CREATED', {
+              args: { model: 'User' },
+            });
 
       return {
         message: errorMessage,
@@ -77,7 +85,7 @@ export class UserController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  async findAllUsers(): Promise<{
+  async findAllUsers(@I18n() i18n: I18nContext): Promise<{
     message: string;
     status: number;
     data?: UserSpecificFieldDto[];
@@ -88,7 +96,9 @@ export class UserController {
         (value) => new UserSpecificFieldDto(value),
       );
       return {
-        message: 'User list successfully retrieved.',
+        message: i18n.t('response.SUCCESS_LIST', {
+          args: { model: 'User' },
+        }),
         status: HttpStatus.OK,
         data: usersResponse,
       };
@@ -97,7 +107,9 @@ export class UserController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            'Error during user recovery.';
+            i18n.t('response.ERROR_LISTING', {
+              args: { model: 'User' },
+            });
 
       return {
         message: errorMessage,
@@ -107,7 +119,10 @@ export class UserController {
   }
 
   @Get(':matricule/detail')
-  async findUserById(@Param('matricule') matricule: string): Promise<{
+  async findUserById(
+    @I18n() i18n: I18nContext,
+    @Param('matricule') matricule: string,
+  ): Promise<{
     message: string;
     status: number;
     data?: UserSpecificFieldDto | null;
@@ -117,13 +132,15 @@ export class UserController {
       if (user) {
         const userDetail = new UserSpecificFieldDto(user);
         return {
-          message: 'Detail of a successfully recovered role.',
+          message: i18n.t('response.SUCCESS_RETRIEVED', {
+            args: { model: 'User' },
+          }),
           status: HttpStatus.OK,
           data: userDetail,
         };
       }
       return {
-        message: 'User not found',
+        message: i18n.t('response.NOT_FOUND', { args: { model: 'User' } }),
         status: HttpStatus.NOT_FOUND,
       };
     } catch (error) {
@@ -131,7 +148,7 @@ export class UserController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            'Error during user recovery.';
+            i18n.t('response.ERROR_RETRIEVED', { args: { model: 'User' } });
 
       return {
         message: errorMessage,
@@ -141,7 +158,10 @@ export class UserController {
   }
 
   @Get('search')
-  async searchUser(@Query('search') search: string): Promise<{
+  async searchUser(
+    @I18n() i18n: I18nContext,
+    @Query('search') search: string,
+  ): Promise<{
     message: string;
     status: number;
     data?: UserSpecificFieldDto[];
@@ -153,13 +173,17 @@ export class UserController {
           (value) => new UserSpecificFieldDto(value),
         );
         return {
-          message: 'User search successfully recovered.',
+          message: i18n.t('response.SUCCESS_SEARCH', {
+            args: { model: 'User' },
+          }),
           status: HttpStatus.OK,
           data: userSearchResponse,
         };
       }
       return {
-        message: 'No user found.',
+        message: i18n.t('response.NOT_FOUND', {
+          args: { model: 'User' },
+        }),
         status: HttpStatus.OK,
         data: [],
       };
@@ -168,7 +192,7 @@ export class UserController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            'Error searching for a user.';
+            i18n.t('response.ERROR_SEARCH', { args: { model: 'User' } });
 
       return {
         message: errorMessage,
@@ -179,6 +203,7 @@ export class UserController {
 
   @Put(':matricule/update')
   async updateUser(
+    @I18n() i18n: I18nContext,
     @Param('matricule') matricule: string,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<{ message: string; status: number; data?: User | null }> {
@@ -188,7 +213,9 @@ export class UserController {
         const role = await this.roleService.findRoleByCode(updateUserDto.role);
         if (!role) {
           return {
-            message: `The role [${updateUserDto.role}] does not exist.`,
+            message: i18n.t('response.NOT_EXIST', {
+              args: { model: 'Role', attribute: `${updateUserDto.role}` },
+            }),
             status: HttpStatus.CONFLICT,
           };
         }
@@ -199,13 +226,17 @@ export class UserController {
         };
         const updatedUser = await this.userService.updateUser(user._id, body);
         return {
-          message: 'User successfully updated.',
+          message: i18n.t('response.SUCCESS_UPDATED', {
+            args: { model: 'User' },
+          }),
           status: HttpStatus.OK,
           data: updatedUser,
         };
       }
       return {
-        message: 'User not found',
+        message: i18n.t('response.NOT_FOUND', {
+          args: { model: 'User' },
+        }),
         status: HttpStatus.NOT_FOUND,
       };
     } catch (error) {
@@ -224,6 +255,7 @@ export class UserController {
 
   @Put(':matricule/account_status')
   async updateUserStatus(
+    @I18n() i18n: I18nContext,
     @Param('matricule') matricule: string,
     @Body() updateUserStatusDto: UpdateStatusUserDto,
   ): Promise<{ message: string; status: number; data?: User | null }> {
@@ -235,13 +267,17 @@ export class UserController {
           updateUserStatusDto,
         );
         return {
-          message: 'User status successfully updated.',
+          message: i18n.t('response.SUCCESS_UPDATED', {
+            args: { model: 'User' },
+          }),
           status: HttpStatus.OK,
           data: updatedUser,
         };
       }
       return {
-        message: 'User not found',
+        message: i18n.t('response.NOT_FOUND', {
+          args: { model: 'Role' },
+        }),
         status: HttpStatus.NOT_FOUND,
       };
     } catch (error) {
@@ -249,7 +285,7 @@ export class UserController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            'Error updating a user.';
+            i18n.t('response.ERROR_UPDATED', { args: { model: 'Role' } });
 
       return {
         message: errorMessage,
@@ -261,6 +297,7 @@ export class UserController {
   @Put(':matricule/picture')
   @UseInterceptors(FileInterceptor('photo', multerConfig(staticUrlImage)))
   async uploadProfileStatus(
+    @I18n() i18n: I18nContext,
     @UploadedFile() file: Request,
     @Param('matricule') matricule: string,
     @Body() pictureUploadDto: PictureUploadDto,
@@ -281,18 +318,20 @@ export class UserController {
             body,
           );
           return {
-            message: 'User photo successfully updated.',
+            message: i18n.t('response.SUCCESS_FILE'),
             status: HttpStatus.OK,
             data: updatedUser,
           };
         }
         return {
-          message: 'No image',
+          message: i18n.t('response.FILE_REQUIRED'),
           status: HttpStatus.BAD_REQUEST,
         };
       }
       return {
-        message: 'User not found',
+        message: i18n.t('response.NOT_FOUND', {
+          args: { model: 'User' },
+        }),
         status: HttpStatus.NOT_FOUND,
       };
     } catch (error) {
@@ -300,7 +339,7 @@ export class UserController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            "Error uploading a user's image.";
+            i18n.t('response.ERROR_FILE');
 
       return {
         message: errorMessage,
@@ -311,19 +350,24 @@ export class UserController {
 
   @Delete(':matricule/delete')
   async deleteUser(
+    @I18n() i18n: I18nContext,
     @Param('matricule') matricule: string,
   ): Promise<{ message: string; status: number; data?: User | null }> {
     try {
-      const role = await this.userService.findUserByMatricule(matricule);
-      if (role) {
-        await this.userService.deleteUser(role._id);
+      const user = await this.userService.findUserByMatricule(matricule);
+      if (user) {
+        await this.userService.deleteUser(user._id);
         return {
-          message: 'User successfully deleted.',
+          message: i18n.t('response.SUCCESS_DELETED', {
+            args: { model: 'User' },
+          }),
           status: HttpStatus.OK,
         };
       }
       return {
-        message: 'User not found',
+        message: i18n.t('response.NOT_FOUND', {
+          args: { model: 'User' },
+        }),
         status: HttpStatus.NOT_FOUND,
       };
     } catch (error) {
@@ -331,7 +375,7 @@ export class UserController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            'Error when deleting user.';
+            i18n.t('response.ERROR_DELETED', { args: { model: 'User' } });
 
       return {
         message: errorMessage,

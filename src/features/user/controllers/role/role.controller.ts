@@ -19,6 +19,7 @@ import {
   RoleSpecificFieldDto,
   UpdateRoleDto,
 } from '../../dtos/role.dto';
+import { I18n, I18nContext } from 'nestjs-i18n';
 
 @Controller('users/roles')
 export class RoleController {
@@ -30,7 +31,9 @@ export class RoleController {
   @Post('store')
   @HttpCode(HttpStatus.CREATED)
   async createRole(
-    @Body() createRoleDto: CreateRoleDto,
+    @I18n() i18n: I18nContext,
+    @Body()
+    createRoleDto: CreateRoleDto,
   ): Promise<{ message: string; status: number; data?: Role }> {
     try {
       const existingRole = await this.roleService.findRoleByName(
@@ -38,7 +41,9 @@ export class RoleController {
       );
       if (existingRole) {
         return {
-          message: `The [${createRoleDto.name}] role already exists.`,
+          message: i18n.t('response.ALREADY_EXIST', {
+            args: { model: 'Role', attribute: `${createRoleDto.name}` },
+          }),
           status: HttpStatus.CONFLICT,
         };
       }
@@ -49,13 +54,23 @@ export class RoleController {
 
       const createdRole: Role = await this.roleService.createRole(body as Role);
       return {
-        message: 'Role successfully created.',
+        message: i18n.t('response.SUCCESS_CREATE', {
+          args: { model: 'Role' },
+        }),
         status: HttpStatus.CREATED,
         data: createdRole,
       };
     } catch (error) {
+      const errorMessage =
+        error instanceof ConflictException
+          ? (error.getResponse() as { message: string }).message
+          : error.message.replace(/^ConflictException: /, '') ||
+            i18n.t('response.ERROR_CREATED', {
+              args: { model: 'Role' },
+            });
+
       return {
-        message: 'Error when creating a role.',
+        message: errorMessage,
         status: HttpStatus.INTERNAL_SERVER_ERROR,
       };
     }
@@ -63,7 +78,7 @@ export class RoleController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  async findAllRoles(): Promise<{
+  async findAllRoles(@I18n() i18n: I18nContext): Promise<{
     message: string;
     status: number;
     data?: RoleSpecificFieldDto[];
@@ -74,7 +89,9 @@ export class RoleController {
         (value) => new RoleSpecificFieldDto(value),
       );
       return {
-        message: 'Role list successfully retrieved.',
+        message: i18n.t('response.SUCCESS_LIST', {
+          args: { model: 'Role' },
+        }),
         status: HttpStatus.OK,
         data: rolesResponse,
       };
@@ -83,7 +100,9 @@ export class RoleController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            'Error when retrieving roles.';
+            i18n.t('response.ERROR_LISTING', {
+              args: { model: 'Role' },
+            });
 
       return {
         message: errorMessage,
@@ -93,7 +112,10 @@ export class RoleController {
   }
 
   @Get(':code/detail')
-  async findRoleById(@Param('code') code: string): Promise<{
+  async findRoleById(
+    @I18n() i18n: I18nContext,
+    @Param('code') code: string,
+  ): Promise<{
     message: string;
     status: number;
     data?: RoleSpecificFieldDto | null;
@@ -103,13 +125,17 @@ export class RoleController {
       if (role) {
         const roleDetail = new RoleSpecificFieldDto(role);
         return {
-          message: 'Detail of a successfully recovered role.',
+          message: i18n.t('response.SUCCESS_RETRIEVED', {
+            args: { model: 'Role' },
+          }),
           status: HttpStatus.OK,
           data: roleDetail,
         };
       }
       return {
-        message: 'Role not found',
+        message: i18n.t('response.NOT_FOUND', {
+          args: { model: 'Role' },
+        }),
         status: HttpStatus.NOT_FOUND,
       };
     } catch (error) {
@@ -117,7 +143,7 @@ export class RoleController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            'Error when retrieving a role.';
+            i18n.t('response.ERROR_RETRIEVED', { args: { model: 'Role' } });
 
       return {
         message: errorMessage,
@@ -127,7 +153,10 @@ export class RoleController {
   }
 
   @Get('search')
-  async searchRole(@Query('search') search: string): Promise<{
+  async searchRole(
+    @I18n() i18n: I18nContext,
+    @Query('search') search: string,
+  ): Promise<{
     message: string;
     status: number;
     data?: RoleSpecificFieldDto[];
@@ -139,13 +168,15 @@ export class RoleController {
           (value) => new RoleSpecificFieldDto(value),
         );
         return {
-          message: 'Search role successfully recovered.',
+          message: i18n.t('response.SUCCESS_SEARCH', {
+            args: { model: 'Role' },
+          }),
           status: HttpStatus.OK,
           data: roleSearchResponse,
         };
       }
       return {
-        message: 'No role found.',
+        message: i18n.t('response.NOT_FOUND', { args: { model: 'Role' } }),
         status: HttpStatus.OK,
         data: [],
       };
@@ -154,7 +185,7 @@ export class RoleController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            'Error when searching for a role.';
+            i18n.t('response.ERROR_SEARCH', { args: { model: 'Role' } });
 
       return {
         message: errorMessage,
@@ -165,6 +196,7 @@ export class RoleController {
 
   @Put(':code/update')
   async updateRole(
+    @I18n() i18n: I18nContext,
     @Param('code') code: string,
     @Body() updateRoleDto: UpdateRoleDto,
   ): Promise<{ message: string; status: number; data?: Role | null }> {
@@ -173,13 +205,15 @@ export class RoleController {
       if (role) {
         const data = await this.roleService.updateRole(role._id, updateRoleDto);
         return {
-          message: 'Modification of a successfully recovered role.',
+          message: i18n.t('response.SUCCESS_UPDATED', {
+            args: { model: 'Role' },
+          }),
           status: HttpStatus.OK,
           data: data,
         };
       }
       return {
-        message: 'Role not found',
+        message: i18n.t('response.NOT_FOUND', { args: { model: 'Role' } }),
         status: HttpStatus.NOT_FOUND,
       };
     } catch (error) {
@@ -187,7 +221,7 @@ export class RoleController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            'Error when updating a role.';
+            i18n.t('response.ERROR_UPDATED', { args: { model: 'Role' } });
 
       return {
         message: errorMessage,
@@ -198,6 +232,7 @@ export class RoleController {
 
   @Delete(':code/delete')
   async deleteRole(
+    @I18n() i18n: I18nContext,
     @Param('code') code: string,
   ): Promise<{ message: string; status: number; data?: Role | null }> {
     try {
@@ -205,12 +240,14 @@ export class RoleController {
       if (role) {
         await this.roleService.deleteRole(role._id);
         return {
-          message: 'Role successfully deleted.',
+          message: i18n.t('response.SUCCESS_DELETED', {
+            args: { model: 'Role' },
+          }),
           status: HttpStatus.OK,
         };
       }
       return {
-        message: 'Role not found',
+        message: i18n.t('response.NOT_FOUND', { args: { model: 'Role' } }),
         status: HttpStatus.NOT_FOUND,
       };
     } catch (error) {
@@ -218,7 +255,7 @@ export class RoleController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            'Error when deleting a role.';
+            i18n.t('response.ERROR_DELETED', { args: { model: 'Role' } });
 
       return {
         message: errorMessage,

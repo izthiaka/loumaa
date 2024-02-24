@@ -15,6 +15,7 @@ import {
 } from '../../dtos/user.dto';
 import UserStatusAccount from 'src/core/constant/user_status_account';
 import BcryptImplement from 'src/core/config/bcrypt-config';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class UserService {
@@ -22,6 +23,7 @@ export class UserService {
     @InjectModel(User.name) private readonly userModel: Model<User>,
     private readonly matriculeGenerate: MatriculeGenerate,
     private readonly bcrypt: BcryptImplement,
+    private readonly i18n: I18nService,
   ) {}
 
   async createUser(createUserDto: CreateUserDto): Promise<User> {
@@ -33,7 +35,9 @@ export class UserService {
 
         if (existingUser) {
           throw new ConflictException(
-            `The user with the email [${createUserDto.email}] already exists.`,
+            this.i18n.t('response.ALREADY_EXIST', {
+              args: { model: 'User', attribute: `${createUserDto.email}` },
+            }),
           );
         }
       }
@@ -45,7 +49,9 @@ export class UserService {
 
         if (existingUser) {
           throw new ConflictException(
-            `The user with the phone number [${createUserDto.phone}] already exists.`,
+            this.i18n.t('response.ALREADY_EXIST', {
+              args: { model: 'User', attribute: `${createUserDto.phone}` },
+            }),
           );
         }
       }
@@ -292,7 +298,11 @@ export class UserService {
       const existingUser = await this.userModel.findById(id).exec();
 
       if (!existingUser) {
-        throw new NotFoundException(`User with ID [${id}] not found.`);
+        throw new NotFoundException(
+          this.i18n.t('response.NOT_FOUND', {
+            args: { model: 'User' },
+          }),
+        );
       }
 
       if (updateUserDto.email) {
@@ -302,7 +312,9 @@ export class UserService {
             .exec();
           if (userWithSameEmail) {
             throw new ConflictException(
-              `The e-mail [${updateUserDto.email}] is already being used by another user.`,
+              this.i18n.t('response.ALREADY_EXIST', {
+                args: { model: 'User', attribute: `${updateUserDto.email}` },
+              }),
             );
           }
         }
@@ -314,7 +326,9 @@ export class UserService {
           .exec();
         if (userWithSamePhone) {
           throw new ConflictException(
-            `The phone number [${updateUserDto.phone}] is already in use by another user.`,
+            this.i18n.t('response.ALREADY_EXIST', {
+              args: { model: 'User', attribute: `${updateUserDto.phone}` },
+            }),
           );
         }
       }
@@ -337,7 +351,11 @@ export class UserService {
       const existingUser = await this.userModel.findById(id).exec();
 
       if (!existingUser) {
-        throw new NotFoundException(`User with ID [${id}] not found.`);
+        throw new NotFoundException(
+          this.i18n.t('response.NOT_FOUND', {
+            args: { model: 'User' },
+          }),
+        );
       }
 
       const updatedUser = await this.userModel
@@ -358,7 +376,11 @@ export class UserService {
       const existingUser = await this.userModel.findById(id).exec();
 
       if (!existingUser) {
-        throw new NotFoundException(`User with ID [${id}] not found.`);
+        throw new NotFoundException(
+          this.i18n.t('response.NOT_FOUND', {
+            args: { model: 'User' },
+          }),
+        );
       }
 
       const updatedUser = await this.userModel
@@ -379,7 +401,11 @@ export class UserService {
       const existingUser = await this.userModel.findById(id).exec();
 
       if (!existingUser) {
-        throw new NotFoundException(`User with ID [${id}] not found.`);
+        throw new NotFoundException(
+          this.i18n.t('response.NOT_FOUND', {
+            args: { model: 'User' },
+          }),
+        );
       }
 
       const updatedUser = await this.userModel
@@ -404,7 +430,11 @@ export class UserService {
       const existingUser = await this.userModel.findById(id).exec();
 
       if (!existingUser) {
-        throw new NotFoundException(`User with ID [${id}] not found.`);
+        throw new NotFoundException(
+          this.i18n.t('response.NOT_FOUND', {
+            args: { model: 'User' },
+          }),
+        );
       }
 
       const updatedUser = await this.userModel
