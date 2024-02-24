@@ -13,7 +13,7 @@ import {
   UpdateStatusUserDto,
   UpdateUserDto,
 } from '../../dtos/user.dto';
-import UserStatusAccount from 'src/core/constant/user_status_account';
+import { UserStatusAccount } from 'src/core/constant/user_status_account';
 import BcryptImplement from 'src/core/config/bcrypt-config';
 import { I18nService } from 'nestjs-i18n';
 

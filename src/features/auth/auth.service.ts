@@ -13,7 +13,7 @@ import { MatriculeGenerate } from 'src/core/utils/matricule_generate/matricule_g
 import BcryptImplement from 'src/core/config/bcrypt-config';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from '../user/entities/user/user.schema';
-import UserStatusAccount from 'src/core/constant/user_status_account';
+import { UserStatusAccount } from 'src/core/constant/user_status_account';
 import { isEmail, isPhoneNumber } from 'class-validator';
 import { JwtService } from '@nestjs/jwt';
 import { UserSessionService } from '../user/services/user_session/user_session.service';

@@ -1,4 +1,4 @@
-export default class UserStatusAccount {
+export class UserStatusAccount {
   static getPendingStatusLibelle(): string {
     return 'PENDING';
   }

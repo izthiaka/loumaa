@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 import { Role } from '../role/role.schema';
-import UserStatusAccount from 'src/core/constant/user_status_account';
+import { UserStatusAccount } from 'src/core/constant/user_status_account';
 import { IsIn } from 'class-validator';
 
 @Schema({ timestamps: true })

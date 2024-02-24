@@ -6,7 +6,7 @@ import {
   IsPhoneNumber,
   IsIn,
 } from 'class-validator';
-import UserStatusAccount from 'src/core/constant/user_status_account';
+import { UserStatusAccount } from 'src/core/constant/user_status_account';
 import { User } from '../entities/user/user.schema';
 import { RoleSpecificFieldDto } from './role.dto';
 import { i18nValidationMessage } from 'nestjs-i18n';
