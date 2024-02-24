@@ -11,40 +11,31 @@ import { UserSessionSpecificFieldDto } from 'src/features/user/dtos/user_session
 import { UserSession } from 'src/features/user/entities/user_session/user_session.schema';
 
 export class SignUpDto {
-  @IsString({
-    message: 'Input [name] must be a character string.',
-  })
-  @IsNotEmpty({ message: 'Input [name] is required.' })
+  @IsString({ message: 'validation.NOT_STRING' })
+  @IsNotEmpty({ message: 'validation.NOT_EMPTY' })
   readonly name: string;
 
   @IsOptional()
-  @IsEmail(
-    {},
-    { message: 'The e-mail address must be a valid e-mail address.' },
-  )
+  @IsEmail({}, { message: 'validation.INVALID_EMAIL' })
   readonly email?: string;
 
-  @IsNotEmpty({ message: 'Input [phone] is required.' })
-  @IsPhoneNumber(undefined, {
-    message: 'The [phone] input must be a valid phone number.',
-  })
+  @IsNotEmpty({ message: 'validation.NOT_EMPTY' })
+  @IsPhoneNumber(undefined, { message: 'validation.INVALID_PHONE_NUMBER' })
   readonly phone: string;
 
-  @IsNotEmpty({ message: 'Input [password] is required.' })
-  @MinLength(8, {
-    message: 'The password must be at least 8 characters long.',
-  })
+  @IsNotEmpty({ message: 'validation.NOT_EMPTY' })
+  @MinLength(8, { message: 'validation.MIN' })
   readonly password: string;
 
-  @IsNotEmpty({ message: 'The [password_confirm] input is required.' })
+  @IsNotEmpty({ message: 'validation.NOT_EMPTY' })
   readonly password_confirm: string;
 }
 
 export class SignInDto {
-  @IsNotEmpty({ message: 'Input [identifier] is required.' })
+  @IsNotEmpty({ message: 'validation.NOT_EMPTY' })
   readonly identifier: string;
 
-  @IsNotEmpty({ message: 'Input [password] is required.' })
+  @IsNotEmpty({ message: 'validation.NOT_EMPTY' })
   readonly password: string;
 }
 
@@ -70,16 +61,14 @@ export class TokenDto {
 }
 
 export class UpdatePasswordDto {
-  @IsNotEmpty({ message: 'The [old_password] input is required.' })
+  @IsNotEmpty({ message: 'validation.NOT_EMPTY' })
   readonly old_password: string;
 
-  @IsNotEmpty({ message: 'Input [password] is required.' })
-  @MinLength(8, {
-    message: 'The password must be at least 8 characters long.',
-  })
+  @IsNotEmpty({ message: 'validation.NOT_EMPTY' })
+  @MinLength(8, { message: 'validation.MIN' })
   readonly password: string;
 
-  @IsNotEmpty({ message: 'The [password_confirm] input is required.' })
+  @IsNotEmpty({ message: 'validation.NOT_EMPTY' })
   readonly password_confirm: string;
 }
 
@@ -113,11 +102,11 @@ export class ProfileSpecificFieldDto {
 }
 
 export class CheckIdentifierDto {
-  @IsNotEmpty({ message: 'Input [identifier] is required.' })
+  @IsNotEmpty({ message: 'validation.NOT_EMPTY' })
   readonly identifier: string;
 }
 
 export class CheckOTPDto {
-  @IsNotEmpty({ message: 'Input [code] is required.' })
+  @IsNotEmpty({ message: 'validation.NOT_EMPTY' })
   readonly code: string;
 }

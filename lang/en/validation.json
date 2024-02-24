@@ -5,5 +5,7 @@
   "IN_VALID": "Valid {property}: {message}",
   "INVALID_EMAIL": "email is invalid",
   "INVALID_PHONE_NUMBER": "phone number is invalid",
-  "INVALID_BOOLEAN": "{property} must be a boolean."
+  "INVALID_BOOLEAN": "{property} must be a boolean.",
+  "MIN": "{property} must be at least {value} characters long",
+  "MAX": "{property} must be less than {value} characters long"
 }

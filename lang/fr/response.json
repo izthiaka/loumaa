@@ -1,32 +1,24 @@
 {
   "SUCCESS_LIST": "Liste des {model}s récupérée avec succès.",
   "ERROR_LISTING": "Erreur lors de la récupération des {model}s.",
-
   "SUCCESS_RETRIEVED": "Détail d'un {model} récupéré avec succès.",
   "ERROR_RETRIEVED": "Erreur lors de la récupération d'un {model}.",
-
   "SUCCESS_SEARCH": "{model} recherché a été récupéré avec succès.",
   "ERROR_SEARCH": "Erreur lors de la récupération d'un {model}.",
-
   "SUCCESS_UPDATED": "Modification d'un {model} récupéré avec succès.",
   "ERROR_UPDATED": "Erreur lors de la modification d'un {model}.",
-
   "SUCCESS_CREATE": "{model} créé avec succès.",
   "ERROR_CREATED": "{model} créé avec succès.",
-
   "SUCCESS_DELETED": "{model} supprimé avec succès.",
   "ERROR_DELETED": "Impossible de supprimer le {model}.",
-
   "ALREADY_EXIST": "{attribute} {model} existe déjà.",
   "NOT_EXIST": "Le {modèle} {attribut} n'existe pas.",
   "NOT_FOUND": "{model} introuvable",
-
   "SUCCESS_FILE": "Fichier chargée avec succès.",
   "ERROR_FILE": "Erreur lors de l'envoi du fichier.",
   "ERROR_FILE_TYPE": "Type de fichier non valide.",
   "INVALID_FILE": "Le fichier n'est pas valide.",
   "FILE_REQUIRED": "Pas de fichier",
-
   "failed": "password",
   "error": "$t(validation.{property}) cannot be empty"
 }

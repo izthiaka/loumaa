@@ -5,5 +5,7 @@
     "NOT_IN": "{property} doit être l'une des valeurs suivantes: {message}",
     "IN_VALID": "Les {property} valides: {message}",
     "INVALID_PHONE_NUMBER": "Le numéro de téléphone n'est pas valide",
-    "INVALID_BOOLEAN": "{property} doit être un boolean."
+    "INVALID_BOOLEAN": "{property} doit être un boolean.",
+    "MIN": "{property} doit comporter au moins {value} caractères",
+    "MAX": "{property} doit être inférieur à {value} caractères"
 }

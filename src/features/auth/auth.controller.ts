@@ -23,6 +23,7 @@ import {
 } from './dto/auth.dto';
 import { AuthGuard } from 'src/guards/auth/auth.guard';
 import { Request } from 'express';
+import { I18n, I18nContext } from 'nestjs-i18n';
 
 @Controller('auth')
 export class AuthController {
@@ -31,6 +32,7 @@ export class AuthController {
   @Post('signin/identifier')
   @HttpCode(HttpStatus.OK)
   async signIn(
+    @I18n() i18n: I18nContext,
     @Body() signInDto: SignInDto,
   ): Promise<{ message: string; status: number; data?: TokenDto }> {
     try {
@@ -43,7 +45,7 @@ export class AuthController {
       );
 
       return {
-        message: 'Authentication successful.',
+        message: i18n.t('auth.SUCCESS_LOGIN'),
         status: HttpStatus.OK,
         data: result,
       };
@@ -52,7 +54,7 @@ export class AuthController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            'Connection error.';
+            i18n.t('auth.ERROR_CONNECTION');
 
       return {
         message: errorMessage,
@@ -64,20 +66,21 @@ export class AuthController {
   @Post('signup/create_account')
   @HttpCode(HttpStatus.CREATED)
   async signUp(
+    @I18n() i18n: I18nContext,
     @Body() signUpDto: SignUpDto,
   ): Promise<{ message: string; status: number; data?: boolean }> {
     try {
       const { password, password_confirm } = signUpDto;
       if (password !== password_confirm) {
         return {
-          message: 'The passwords do not match.',
+          message: i18n.t('auth.PASSWORD_NOT_MATCH'),
           status: HttpStatus.BAD_REQUEST,
         };
       }
 
       const result = await this.authService.signUp(signUpDto);
       return {
-        message: 'Successful registration.',
+        message: i18n.t('auth.SUCCESS_REGISTER'),
         status: HttpStatus.CREATED,
         data: result,
       };
@@ -86,7 +89,7 @@ export class AuthController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            'Registration error.';
+            i18n.t('auth.ERROR_REGISTER');
 
       return {
         message: errorMessage,
@@ -98,7 +101,10 @@ export class AuthController {
   @Get('me')
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
-  async profile(@Req() request: Request & { matricule: string }): Promise<{
+  async profile(
+    @I18n() i18n: I18nContext,
+    @Req() request: Request & { matricule: string },
+  ): Promise<{
     message: string;
     status: number;
     data?: ProfileSpecificFieldDto;
@@ -108,7 +114,7 @@ export class AuthController {
       const profile = await this.authService.profile(req);
       const result = new ProfileSpecificFieldDto(profile);
       return {
-        message: 'Profile recovery successful.',
+        message: i18n.t('auth.PROFILE_CONNECTED'),
         status: HttpStatus.CREATED,
         data: result,
       };
@@ -117,7 +123,7 @@ export class AuthController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            'Error when retrieving profile.';
+            i18n.t('auth.PROFILE_FAILED');
 
       return {
         message: errorMessage,
@@ -130,6 +136,7 @@ export class AuthController {
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
   async refreshToken(
+    @I18n() i18n: I18nContext,
     @Req() request: Request & { matricule: string },
   ): Promise<{ message: string; status: number; data?: TokenDto }> {
     try {
@@ -143,7 +150,7 @@ export class AuthController {
         tokenRefresh.refreshExpireAt,
       );
       return {
-        message: 'Token successfully refreshed.',
+        message: i18n.t('auth.REFRESH_TOKEN'),
         status: HttpStatus.OK,
         data: result,
       };
@@ -152,7 +159,7 @@ export class AuthController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            'Error updating token.';
+            i18n.t('auth.ERROR_UPDATE_TOKEN');
 
       return {
         message: errorMessage,
@@ -165,6 +172,7 @@ export class AuthController {
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
   async updatePassword(
+    @I18n() i18n: I18nContext,
     @Body() updatePasswordDto: UpdatePasswordDto,
     @Req() request: Request & { matricule: string },
   ) {
@@ -176,7 +184,7 @@ export class AuthController {
         const { password, password_confirm } = updatePasswordDto;
         if (password !== password_confirm) {
           return {
-            message: 'The passwords do not match.',
+            message: i18n.t('auth.PASSWORD_NOT_MATCH'),
             status: HttpStatus.BAD_REQUEST,
           };
         }
@@ -186,13 +194,13 @@ export class AuthController {
           updatePasswordDto,
         );
         return {
-          message: 'Password update successful.',
+          message: i18n.t('auth.SUCCESS_UPDATE_PASSWORD'),
           status: HttpStatus.OK,
           data: result,
         };
       }
       return {
-        message: 'User profile not found.',
+        message: i18n.t('auth.PROFILE_NOT_FOUND'),
         status: HttpStatus.NOT_FOUND,
       };
     } catch (error) {
@@ -200,7 +208,7 @@ export class AuthController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            'Error updating password.';
+            i18n.t('auth.ERROR_UPDATE_PASSWORD');
 
       return {
         message: errorMessage,
@@ -218,20 +226,23 @@ export class AuthController {
   @Delete('me/delete_account')
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
-  async deleteAccount(@Req() request: Request & { matricule: string }) {
+  async deleteAccount(
+    @I18n() i18n: I18nContext,
+    @Req() request: Request & { matricule: string },
+  ) {
     try {
       const req = request.matricule;
       const profile = await this.authService.profile(req);
       if (profile) {
         const result = await this.authService.deleteAccount(profile);
         return {
-          message: 'Successful account deletion.',
+          message: i18n.t('auth.DELETED_ACCOUNT'),
           status: HttpStatus.OK,
           data: result,
         };
       }
       return {
-        message: 'User profile not found.',
+        message: i18n.t('auth.PROFILE_NOT_FOUND'),
         status: HttpStatus.NOT_FOUND,
       };
     } catch (error) {
@@ -239,7 +250,7 @@ export class AuthController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            'Account deletion error.';
+            i18n.t('auth.ERROR_DELETED_ACCOUNT');
 
       return {
         message: errorMessage,
@@ -252,13 +263,14 @@ export class AuthController {
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
   async logOut(
+    @I18n() i18n: I18nContext,
     @Req() request: Request & { matricule: object },
   ): Promise<{ message: string; status: number; data?: boolean }> {
     try {
       const req = request.matricule;
       const result = await this.authService.logOut(req);
       return {
-        message: 'Successful logout.',
+        message: i18n.t('auth.SUCCESS_LOGOUT'),
         status: HttpStatus.OK,
         data: result,
       };
@@ -267,7 +279,7 @@ export class AuthController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            'Error during disconnection.';
+            i18n.t('auth.ERROR_LOGOUT');
 
       return {
         message: errorMessage,
@@ -278,11 +290,14 @@ export class AuthController {
 
   @Post('signin/forget_password')
   @HttpCode(HttpStatus.OK)
-  async forgetPassword(@Body() checkIdentifierDto: CheckIdentifierDto) {
+  async forgetPassword(
+    @I18n() i18n: I18nContext,
+    @Body() checkIdentifierDto: CheckIdentifierDto,
+  ) {
     try {
       const result = await this.authService.forgetPassword(checkIdentifierDto);
       return {
-        message: 'OTP code sent successfully.',
+        message: i18n.t('auth.SUCCESS_OTP'),
         status: HttpStatus.OK,
         data: result,
       };
@@ -291,7 +306,7 @@ export class AuthController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            'Error during verification.';
+            i18n.t('auth.ERROR_SENDING_OTP');
 
       return {
         message: errorMessage,
@@ -302,7 +317,7 @@ export class AuthController {
 
   @Post('signin/check_code')
   @HttpCode(HttpStatus.OK)
-  checkOTP(@Body() checkOTPDto: CheckOTPDto) {
+  checkOTP(@I18n() i18n: I18nContext, @Body() checkOTPDto: CheckOTPDto) {
     try {
       return this.authService.checkOTP(checkOTPDto);
     } catch (error) {
@@ -310,7 +325,7 @@ export class AuthController {
         error instanceof ConflictException
           ? (error.getResponse() as { message: string }).message
           : error.message.replace(/^ConflictException: /, '') ||
-            'Erreur lors de la vérification.';
+            i18n.t('auth.ERROR_CHECKING');
 
       return {
         message: errorMessage,

@@ -19,6 +19,7 @@ import { JwtService } from '@nestjs/jwt';
 import { UserSessionService } from '../user/services/user_session/user_session.service';
 import { RandomCodeUtil } from 'src/core/utils/random-code/random-code.util';
 import { MailService } from 'src/services/mail/mail.service';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class AuthService {
@@ -33,6 +34,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly randomCodeUtil: RandomCodeUtil,
     private mailService: MailService,
+    private readonly i18n: I18nService,
   ) {}
 
   async signIn(signInDto: SignInDto) {
@@ -48,7 +50,9 @@ export class AuthService {
         const result = await this.generateToken(user);
         return result;
       }
-      throw new Error('Identifier not found.');
+      throw new Error(
+        this.i18n.t('response.NOT_FOUND', { args: { model: 'User' } }),
+      );
     } catch (error) {
       throw Error(error);
     }
@@ -59,13 +63,21 @@ export class AuthService {
     if (phone) {
       const existingUserPhone = await this.userService.findUserByPhone(phone);
       if (existingUserPhone) {
-        throw new Error(`The phone number [${phone}] already exists.`);
+        throw new ConflictException(
+          this.i18n.t('response.ALREADY_EXIST', {
+            args: { model: 'User', attribute: `${phone}` },
+          }),
+        );
       }
     }
 
     const existingUserEmail = await this.userService.findUserByEmail(email);
     if (existingUserEmail) {
-      throw new Error('This e-mail is already in use.');
+      throw new ConflictException(
+        this.i18n.t('response.ALREADY_EXIST', {
+          args: { model: 'User', attribute: `${email}` },
+        }),
+      );
     }
 
     const passwordHash = this.bcrypt.hash(password);
@@ -95,7 +107,7 @@ export class AuthService {
         const result = await this.generateToken(user);
         return result;
       }
-      throw new ConflictException('User not found. Please login.');
+      throw new ConflictException(this.i18n.t('auth.REFRESH_TOKEN_EXPIRE'));
     } catch (error) {
       throw Error(error);
     }
@@ -120,9 +132,7 @@ export class AuthService {
     isIdentifierPhone ? (type = 'phone') : type;
 
     if (!isIdentifierEmail && !isIdentifierPhone)
-      throw new Error(
-        'The input [identifier] must be an email or a phone number.',
-      );
+      throw new Error(this.i18n.t('auth.IDENTIFIER_INVALID'));
 
     return type;
   }
@@ -130,7 +140,7 @@ export class AuthService {
   private validatePassword(inputPassword: string, userPassword: string) {
     const passwordIsValid = this.bcrypt.compare(inputPassword, userPassword);
     if (!passwordIsValid)
-      throw new Error('Incorrect login and/or password. Please try again.');
+      throw new Error(this.i18n.t('auth.LOGIN_OR_PASSWORD_INVALID'));
   }
 
   private calculateExpiresIn(hours: number) {
@@ -140,13 +150,13 @@ export class AuthService {
 
   private checkAccountStatus(status: string) {
     if (status === UserStatusAccount.getPendingStatusLibelle())
-      throw new Error('Your account is awaiting validation. Please wait.');
+      throw new Error(this.i18n.t('auth.ACCOUNT_AWAITING'));
 
     if (
       status === UserStatusAccount.getDeActivatedStatusLibelle() ||
       status === UserStatusAccount.getBannedStatusLibelle()
     )
-      throw new Error('Inactive account, please contact the administrator.');
+      throw new Error(this.i18n.t('auth.ACCOUNT_INACTIVE'));
   }
 
   async generateAccessToken(user: User): Promise<string> {
@@ -197,7 +207,7 @@ export class AuthService {
         updatePasswordDto.old_password,
         user.password,
       );
-      if (!passwordIsValid) throw new Error('Old password incorrect.');
+      if (!passwordIsValid) throw new Error(this.i18n.t('auth.OLD_PASSWORD'));
 
       const hashedPassword = this.bcrypt.hash(updatePasswordDto.password);
       await this.userService.updatePassword(user._id, hashedPassword);
@@ -240,7 +250,9 @@ export class AuthService {
         );
         return true;
       }
-      throw new Error('Login not found.');
+      throw new Error(
+        this.i18n.t('response.NOT_FOUND', { args: { model: 'User' } }),
+      );
     } catch (error) {
       throw Error(error);
     }
@@ -264,7 +276,9 @@ export class AuthService {
       );
       return true;
     }
-    throw new Error('Login not found.');
+    throw new Error(
+      this.i18n.t('response.NOT_FOUND', { args: { model: 'User' } }),
+    );
   }
 
   checkOTP(checkOTPDto: CheckOTPDto) {
