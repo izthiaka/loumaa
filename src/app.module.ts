@@ -1,9 +1,16 @@
+import { LoggerModule } from './logger/logger.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
-
+import {
+  AcceptLanguageResolver,
+  I18nModule,
+  QueryResolver,
+  HeaderResolver,
+} from 'nestjs-i18n';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+
 import appConfig from './core/config/app-config';
 import MongooseConfig from './core/config/database-config';
 import { UserModule } from './features/user/modules/user.module';
@@ -11,15 +18,10 @@ import { RoleModule } from './features/user/modules/role.module';
 import { AuthModule } from './features/auth/auth.module';
 import { validationSchema } from './core/config/env/validation';
 import { configEnv } from './core/config/env/configEnv';
-import {
-  AcceptLanguageResolver,
-  I18nModule,
-  QueryResolver,
-  HeaderResolver,
-} from 'nestjs-i18n';
 
 @Module({
   imports: [
+    LoggerModule,
     I18nModule.forRoot({
       fallbackLanguage: 'en',
       fallbacks: {

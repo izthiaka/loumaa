@@ -14,6 +14,7 @@ import { JwtStrategy } from './jwt.strategy';
 import { UserSessionModule } from '../user/modules/user_session.module';
 import { RandomCodeUtil } from 'src/core/utils/random-code/random-code.util';
 import { MailModule } from 'src/services/mail/mail.module';
+import { LoggerService } from 'src/logger/logger.service';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { MailModule } from 'src/services/mail/mail.module';
     UserService,
     JwtStrategy,
     RandomCodeUtil,
+    LoggerService,
   ],
   exports: [AuthService],
 })

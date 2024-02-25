@@ -2,7 +2,6 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as moment from 'moment';
 
-// import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ForbiddenExceptionFilter } from './core/responses/forbidden-exception.filter';
 import { I18nValidationExceptionFilter, I18nValidationPipe } from 'nestjs-i18n';
@@ -10,8 +9,6 @@ import { I18nValidationExceptionFilter, I18nValidationPipe } from 'nestjs-i18n';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  // app.useGlobalPipes(new ValidationPipe({ transform: true }));
-  // app.useGlobalFilters(new ForbiddenExceptionFilter());
   app.useGlobalPipes(new I18nValidationPipe({ transform: true }));
   app.useGlobalFilters(
     new ForbiddenExceptionFilter(),

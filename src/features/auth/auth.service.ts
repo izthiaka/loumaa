@@ -20,6 +20,7 @@ import { UserSessionService } from '../user/services/user_session/user_session.s
 import { RandomCodeUtil } from 'src/core/utils/random-code/random-code.util';
 import { MailService } from 'src/services/mail/mail.service';
 import { I18nService } from 'nestjs-i18n';
+import { LoggerService } from 'src/logger/logger.service';
 
 @Injectable()
 export class AuthService {
@@ -35,6 +36,7 @@ export class AuthService {
     private readonly randomCodeUtil: RandomCodeUtil,
     private mailService: MailService,
     private readonly i18n: I18nService,
+    private readonly logger: LoggerService,
   ) {}
 
   async signIn(signInDto: SignInDto) {
@@ -48,6 +50,10 @@ export class AuthService {
         this.checkAccountStatus(user.status);
 
         const result = await this.generateToken(user);
+        this.logger.log(
+          `User with matricule ${user.matricule} has successfully logged in`,
+          'Login',
+        );
         return result;
       }
       throw new Error(
@@ -96,6 +102,10 @@ export class AuthService {
      const url = `${process.env.FRONT_END_URL}/auth/confirm/${token}`;*/
 
     //await this.sendConfirmAccountMail(user.email, user.matricule, url);
+    this.logger.log(
+      `User with matricule ${user.matricule} has successfully registered`,
+      'Register',
+    );
     return true;
   }
 
@@ -195,6 +205,8 @@ export class AuthService {
       const { username } = auth;
       const user = await this.userService.findUserProfile(username);
       await this.userSessionService.deleteSession(user._id);
+
+      this.logger.log(`User ${username} has logged out`, `Logout`);
       return true;
     } catch (error) {
       throw Error(error);
@@ -211,6 +223,7 @@ export class AuthService {
 
       const hashedPassword = this.bcrypt.hash(updatePasswordDto.password);
       await this.userService.updatePassword(user._id, hashedPassword);
+      this.logger.log(`${user.matricule} has updated his password`, 'Update');
       return true;
     } catch (error) {
       throw Error(error);
@@ -224,6 +237,7 @@ export class AuthService {
       await this.userService.deleteUser(_id);
       await this.userSessionService.deleteSession(_id);
 
+      this.logger.log(`User ${_id} has deleted his account`, 'Delete Account');
       return true;
     } catch (error) {
       throw Error(error);
