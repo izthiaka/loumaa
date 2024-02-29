@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { corsOptions } from './core/config/cors-config';
 import * as moment from 'moment';
 
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -9,6 +10,7 @@ import { I18nValidationExceptionFilter, I18nValidationPipe } from 'nestjs-i18n';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+  app.enableCors(corsOptions);
   app.useGlobalPipes(new I18nValidationPipe({ transform: true }));
   app.useGlobalFilters(
     new ForbiddenExceptionFilter(),
