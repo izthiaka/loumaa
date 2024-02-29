@@ -317,9 +317,19 @@ export class AuthController {
 
   @Post('signin/check_code')
   @HttpCode(HttpStatus.OK)
-  checkOTP(@I18n() i18n: I18nContext, @Body() checkOTPDto: CheckOTPDto) {
+  async checkOTP(@I18n() i18n: I18nContext, @Body() checkOTPDto: CheckOTPDto) {
     try {
-      return this.authService.checkOTP(checkOTPDto);
+      const result = await this.authService.checkOTP(checkOTPDto);
+      if (result === false)
+        return {
+          message: i18n.t('auth.ERROR_CHECKING'),
+          status: HttpStatus.BAD_REQUEST,
+        };
+
+      return {
+        message: i18n.t('auth.SUCCESS_CHECKING'),
+        status: HttpStatus.OK,
+      };
     } catch (error) {
       const errorMessage =
         error instanceof ConflictException

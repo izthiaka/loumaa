@@ -21,6 +21,19 @@ import { configEnv } from './core/config/env/configEnv';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      envFilePath: configEnv(process.env.NODE_ENV),
+      isGlobal: true,
+      load: [appConfig, MongooseConfig],
+      validationSchema,
+    }),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        uri: configService.get<string>('uri'),
+      }),
+      inject: [ConfigService],
+    }),
     LoggerModule,
     I18nModule.forRoot({
       fallbackLanguage: 'en',
@@ -40,19 +53,6 @@ import { configEnv } from './core/config/env/configEnv';
     }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..'),
-    }),
-    ConfigModule.forRoot({
-      envFilePath: configEnv(process.env.NODE_ENV),
-      isGlobal: true,
-      load: [appConfig, MongooseConfig],
-      validationSchema,
-    }),
-    MongooseModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        uri: configService.get<string>('uri'),
-      }),
-      inject: [ConfigService],
     }),
     RoleModule,
     UserModule,

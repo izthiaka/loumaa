@@ -1,5 +1,10 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
+import { I18nService } from 'nestjs-i18n';
+import { isEmail, isPhoneNumber } from 'class-validator';
+import { JwtService } from '@nestjs/jwt';
+// import * as speakeasy from 'speakeasy';
 import {
   CheckIdentifierDto,
   CheckOTPDto,
@@ -11,16 +16,13 @@ import { UserService } from '../user/services/user/user.service';
 import { RoleService } from '../user/services/role/role.service';
 import { MatriculeGenerate } from 'src/core/utils/matricule_generate/matricule_generate.util';
 import BcryptImplement from 'src/core/config/bcrypt-config';
-import { InjectModel } from '@nestjs/mongoose';
 import { User } from '../user/entities/user/user.schema';
 import { UserStatusAccount } from 'src/core/constant/user_status_account';
-import { isEmail, isPhoneNumber } from 'class-validator';
-import { JwtService } from '@nestjs/jwt';
 import { UserSessionService } from '../user/services/user_session/user_session.service';
 import { RandomCodeUtil } from 'src/core/utils/random-code/random-code.util';
 import { MailService } from 'src/services/mail/mail.service';
-import { I18nService } from 'nestjs-i18n';
 import { LoggerService } from 'src/logger/logger.service';
+import { OTP } from 'src/core/utils/two-factor-auth/otp.util';
 
 @Injectable()
 export class AuthService {
@@ -37,6 +39,7 @@ export class AuthService {
     private mailService: MailService,
     private readonly i18n: I18nService,
     private readonly logger: LoggerService,
+    private speakeasy: OTP,
   ) {}
 
   async signIn(signInDto: SignInDto) {
@@ -253,15 +256,12 @@ export class AuthService {
         checkIdentifierDto.identifier,
       );
       if (user) {
-        const code = this.randomCodeUtil.generateCode(6);
-        await this.userService.updateIdentifierToken(user._id, code);
+        const { code, secret } = this.speakeasy.generateOtp();
+        console.log('code : ', `${code}`);
+        console.log('secret : ', `${secret}`);
+        await this.userService.updateIdentifierToken(user._id, secret);
 
-        // Send code to email or phone number
-        await this.mailService.sendUserConfirmation(
-          user,
-          'token',
-          'confirmation',
-        );
+        this.mailService.sendUserConfirmation(user, code, 'confirmation');
         return true;
       }
       throw new Error(
@@ -295,14 +295,16 @@ export class AuthService {
     );
   }
 
-  checkOTP(checkOTPDto: CheckOTPDto) {
+  async checkOTP(checkOTPDto: CheckOTPDto) {
     try {
+      console.log('checkOTPDto code : ', checkOTPDto.code);
+      const result = this.speakeasy.validateOtp(checkOTPDto.code);
       // const code = this.otp.validateOtp(
       //   checkOTPDto.code,
       //   'JY4U4NTTGU3ESTTOHM7S6VSPLJ5V2NTRKQ5GQ2CTIY7GELBYKAYA',
       // );
-      console.log('checkOTPDto : ', checkOTPDto);
-      return true;
+      console.log('speakeasy result : ', result);
+      return result;
     } catch (error) {
       throw Error(error);
     }
