@@ -19,7 +19,7 @@ import { RoleModule } from './features/user/modules/role.module';
 import { AuthModule } from './features/auth/auth.module';
 import { validationSchema } from './core/config/env/validation';
 import { configEnv } from './core/config/env/configEnv';
-// import { AdminModule } from './features/user/admin/admin.module';
+import { AdminModule } from './features/user/modules/admin.module';
 
 @Module({
   imports: [
@@ -59,6 +59,7 @@ import { configEnv } from './core/config/env/configEnv';
     RoleModule,
     UserModule,
     AuthModule,
+    AdminModule,
     ThrottlerModule.forRoot([
       {
         name: 'long',
@@ -66,7 +67,6 @@ import { configEnv } from './core/config/env/configEnv';
         limit: 2,
       },
     ]),
-    // AdminModule,
   ],
 })
 export class AppModule {}
