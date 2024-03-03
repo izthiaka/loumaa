@@ -24,11 +24,14 @@ import {
 import { AuthGuard } from 'src/guards/auth/auth.guard';
 import { Request } from 'express';
 import { I18n, I18nContext } from 'nestjs-i18n';
+import { SkipThrottle, Throttle } from '@nestjs/throttler';
 
+@SkipThrottle()
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Throttle({ long: { ttl: 60000, limit: 2 } })
   @Post('signin/identifier')
   @HttpCode(HttpStatus.OK)
   async signIn(

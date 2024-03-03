@@ -10,6 +10,7 @@ import {
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 import appConfig from './core/config/app-config';
 import MongooseConfig from './core/config/database-config';
@@ -18,6 +19,7 @@ import { RoleModule } from './features/user/modules/role.module';
 import { AuthModule } from './features/auth/auth.module';
 import { validationSchema } from './core/config/env/validation';
 import { configEnv } from './core/config/env/configEnv';
+// import { AdminModule } from './features/user/admin/admin.module';
 
 @Module({
   imports: [
@@ -57,6 +59,14 @@ import { configEnv } from './core/config/env/configEnv';
     RoleModule,
     UserModule,
     AuthModule,
+    ThrottlerModule.forRoot([
+      {
+        name: 'long',
+        ttl: 60000,
+        limit: 2,
+      },
+    ]),
+    // AdminModule,
   ],
 })
 export class AppModule {}

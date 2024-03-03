@@ -19,8 +19,13 @@ export class ForbiddenExceptionFilter implements ExceptionFilter {
         status: status,
         error: 'Forbidden',
       });
-    } else {
-      throw exception;
     }
+    if (status === HttpStatus.TOO_MANY_REQUESTS) {
+      response.status(status).json({
+        message: 'ThrottlerException: Too Many Requests',
+        status: status,
+      });
+    }
+    throw exception;
   }
 }

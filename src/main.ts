@@ -4,7 +4,7 @@ import { corsOptions } from './core/config/cors-config';
 import * as moment from 'moment';
 
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { ForbiddenExceptionFilter } from './core/responses/forbidden-exception.filter';
+import { ForbiddenExceptionFilter } from './core/responses/forbidden-exception-response';
 import { I18nValidationExceptionFilter, I18nValidationPipe } from 'nestjs-i18n';
 
 async function bootstrap() {
